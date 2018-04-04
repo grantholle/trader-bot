@@ -1,0 +1,20 @@
+{
+  "name": "bot",
+  "version": "1.0.0",
+  "license": "None",
+  "scripts": {
+    "style": "./node_modules/.bin/standard --fix"
+  },
+  "dependencies": {
+    "bignumber.js": "^6.0.0",
+    "dotenv": "^5.0.1",
+    "gdax": "^0.6.0",
+    "gdax-trading-toolkit": "^0.3.1",
+    "moment": "^2.22.0",
+    "technicalindicators": "^1.1.8",
+    "winston": "^2.4.1"
+  },
+  "devDependencies": {
+    "standard": "^11.0.1"
+  }
+}
