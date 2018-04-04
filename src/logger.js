@@ -9,7 +9,7 @@ const logOptions = {
     new winston.transports.Console({
       colorize: 'all',
       json: false,
-      timestamp: () => moment().format('MM/DD/YYYY h:mm:ss:SSSA')
+      timestamp: () => moment().format('MM/DD/YYYY HH:mm:ss:SSS')
     }),
     new winston.transports.File({
       filename: './trader.log',
@@ -17,7 +17,7 @@ const logOptions = {
       maxFiles: 5,
       showLevel: true,
       tailable: true,
-      timestamp: () => moment().format('MM/DD/YYYY h:mm:ss:SSSA')
+      timestamp: () => moment().format('MM/DD/YYYY HH:mm:ss:SSS')
     })
   ],
   colorize: true
