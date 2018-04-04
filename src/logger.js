@@ -1,7 +1,6 @@
 'use strict'
 
 const winston = require('winston')
-const p = require('path')
 const moment = require('moment')
 
 const logOptions = {
