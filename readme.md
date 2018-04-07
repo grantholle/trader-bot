@@ -39,3 +39,7 @@ USE_SANDBOX=false
 PUSHBULLET_KEY=
 PUSHBULLET_DEVICE_ID=
 ```
+
+## License
+
+[MIT](license.md)
