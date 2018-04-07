@@ -10,6 +10,7 @@
     "dotenv": "^5.0.1",
     "gdax": "^0.6.0",
     "gdax-trading-toolkit": "^0.3.1",
+    "lodash": "^4.17.5",
     "moment": "^2.22.0",
     "technicalindicators": "^1.1.8",
     "winston": "^2.4.1"
