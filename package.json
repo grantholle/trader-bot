@@ -1,7 +1,12 @@
 {
   "name": "bot",
+  "description": "A GDAX trading bot",
   "version": "1.0.0",
-  "license": "None",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/grantholle/trader-bot"
+  },
   "scripts": {
     "style": "./node_modules/.bin/standard --fix"
   },
@@ -9,7 +14,6 @@
     "bignumber.js": "^6.0.0",
     "dotenv": "^5.0.1",
     "gdax": "^0.6.0",
-    "gdax-trading-toolkit": "^0.3.1",
     "lodash": "^4.17.5",
     "moment": "^2.22.0",
     "technicalindicators": "^1.1.8",
