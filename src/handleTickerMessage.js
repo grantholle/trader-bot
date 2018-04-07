@@ -18,11 +18,11 @@ module.exports = (message, priceTracker) => {
 
   logger.verbose(`Trade: ${message.product_id} ${message.side} @ ${message.price.toFixed(2)} (${message.last_size})`)
 
-  const productHistory = priceTracker[message.product_id]
+  const productData = priceTracker[message.product_id]
 
   // Set the current candle price data for each granularity
   for (const granularity of granularities) {
-    const candle = productHistory[granularity].currentCandle
+    const candle = productData[granularity].currentCandle
 
     candle.close = message.price
 
