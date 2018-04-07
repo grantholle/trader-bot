@@ -5,13 +5,9 @@ const { products, periods } = require('./config')
 const BigNumber = require('bignumber.js')
 const { ema } = require('technicalindicators')
 
-exports.highLowSpread = candle => {
-  return candle.high.minus(candle.low).toFixed(2)
-}
+exports.highLowSpread = candle => candle.high.minus(candle.low).toFixed(2)
 
-exports.candleChange = candle => {
-  candle.close.minus(candle.open).toFixed(2)
-}
+exports.candleChange = candle => candle.close.minus(candle.open).toFixed(2)
 
 exports.calculateEma = (product, granularity, values) => {
   const e = {}
