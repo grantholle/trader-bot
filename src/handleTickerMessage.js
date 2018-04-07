@@ -1,7 +1,6 @@
 'use strict'
 
 const logger = require('./logger')
-const pusher = new gdax.utils.PushBullet(process.env.PUSHBULLET_KEY)
 const { periods, granularities } = require('./config')
 const smallerPeriod = Math.min(...periods)
 const smallerGranularity = Math.min(...granularities)

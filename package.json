@@ -16,6 +16,7 @@
     "gdax": "^0.6.0",
     "lodash": "^4.17.5",
     "moment": "^2.22.0",
+    "pushbullet": "^2.2.0",
     "technicalindicators": "^1.1.8",
     "winston": "^2.4.1"
   },
