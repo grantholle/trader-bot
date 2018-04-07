@@ -1,6 +1,5 @@
 'use strict'
 
-const gdax = require('gdax-trading-toolkit')
 const logger = require('./logger')
 const pusher = new gdax.utils.PushBullet(process.env.PUSHBULLET_KEY)
 const { periods, granularities } = require('./config')
