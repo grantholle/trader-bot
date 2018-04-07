@@ -28,6 +28,11 @@ gdaxWebsocket.on('open', () => {
   // current EMA for each granularity and period
   init().then(tracker => {
     priceTracker = tracker
+
+    // Only attach the listener after we've been initialized
+    gdaxWebsocket.on('message', message => {
+      tickerHandler(message, priceTracker)
+    })
   }).catch(logger.error)
 })
 
@@ -43,7 +48,3 @@ gdaxWebsocket.on('close', () => {
 })
 
 gdaxWebsocket.on('error', logger.error)
-
-gdaxWebsocket.on('message', message => {
-  tickerHandler(message, priceTracker)
-})
