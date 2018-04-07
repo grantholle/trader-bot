@@ -1,8 +1,9 @@
 'use strict'
 
 const logger = require('./logger')
-const { products } = require('./config')
+const { products, periods } = require('./config')
 const BigNumber = require('bignumber.js')
+const { ema } = require('technicalindicators')
 
 exports.highLowSpread = candle => {
   return candle.high.minus(candle.low).toFixed(2)
