@@ -7,7 +7,8 @@ const { products, granularities, periods } = require('./config')
 const { clone } = require('lodash')
 const accountBalances = require('./accounts')
 const BigNumber = require('bignumber.js')
-const { calculateEma, highLowSpread, candleChange } = require('./utilities')
+const { getIndicators, highLowSpread, candleChange, percentChange } = require('./utilities')
+const { predictPattern } = require('technicalindicators')
 
 module.exports = () => {
   const priceTracker = {}
@@ -25,13 +26,12 @@ module.exports = () => {
     for (const product of products) {
       priceTracker[product] = {}
 
-
       // Within the product, iterate the different granularities
       for (const granularity of granularities) {
         priceTracker[product][granularity] = {}
         const tracker = priceTracker[product][granularity]
 
-        logger.verbose(`Getting historical data for ${product} at every ${granularity / 60} minutes`)
+        logger.verbose(`${product}: Getting historical data at every ${granularity / 60} minutes`)
 
         try {
           // Make the request
@@ -56,11 +56,11 @@ module.exports = () => {
             tracker.allCandles.splice(0, totalResults - process.env.PRICE_CACHE_SIZE)
           }
 
-          logger.verbose(`${totalResults} historical prices for ${product} @ ${granularity / 60} minutes`)
+          logger.debug(`${product}: Total historical prices @ ${granularity / 60} minutes: ${totalResults}`)
 
           // Calculate the EMA using the historic prices
           // for each of the configured periods
-          tracker.ema = calculateEma(product, granularity, tracker.allCandles.map(c => c.close.toNumber()))
+          tracker.indicators = await getIndicators(product, granularity, tracker.allCandles.map(c => c.close.toNumber()))
 
           const close = new BigNumber(tracker.allCandles[totalResults - 1].close)
           tracker.currentCandle = {
@@ -70,11 +70,11 @@ module.exports = () => {
           }
 
           // Start the interval at the granularity in ms
-          // To contribute to the running count
-          tracker.interval = setInterval(() => {
+          // To contribute to the running count and make calculations
+          tracker.interval = setInterval(async () => {
             const c = tracker.currentCandle
 
-            logger.debug(`${granularity / 60}min candle data: open=${c.open.toFixed(2)}, close=${c.close.toFixed(2)}, ${candleChange(c)} change, ${highLowSpread(c)} spread`)
+            logger.debug(`${product}: ${granularity / 60}min candle data: open=${c.open.toFixed(2)}, close=${c.close.toFixed(2)}, ${percentChange(c.open, c.close).toFixed(2)}% change, ${highLowSpread(c)} spread`)
 
             // Add the last candle to the historical candles
             tracker.allCandles.push(clone(c))
@@ -90,7 +90,9 @@ module.exports = () => {
             c.high = c.close
 
             // Recalculate the EMA
-            tracker.ema = calculateEma(product, granularity, tracker.allCandles.map(c => c.close.toNumber()))
+            tracker.indicators = await getIndicators(product, granularity, tracker.allCandles.map(c => c.close.toNumber()))
+
+            // Do some analysis on the last candle...
           }, granularity * 1000) // Granularity is in seconds
         } catch (err) {
           return reject(err)
