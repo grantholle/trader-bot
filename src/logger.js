@@ -2,6 +2,7 @@
 
 const winston = require('winston')
 const moment = require('moment')
+const p = require('path')
 
 const logOptions = {
   level: process.env.LOG_LEVEL,
@@ -12,7 +13,7 @@ const logOptions = {
       timestamp: () => moment().format('MM/DD/YYYY HH:mm:ss:SSS')
     }),
     new winston.transports.File({
-      filename: './trader.log',
+      filename: p.join(__dirname, '..', 'logs', 'trader.log'),
       maxsize: 1000000,
       maxFiles: 5,
       showLevel: true,
