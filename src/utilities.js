@@ -25,7 +25,7 @@ exports.getIndicators = async (product, granularity, values) => {
 
     // Predict the pattern
     indicators.pattern[period] = await predictPattern({ values: avg })
-    logger.verbose(`${product}: pattern detection based on EMA${period}`, indicators.pattern[period])
+    logger.verbose(`${product}: Pattern detection based on EMA${period}`, indicators.pattern[period])
   }
 
   return indicators
