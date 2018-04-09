@@ -18,6 +18,7 @@ const logOptions = {
       maxFiles: 5,
       showLevel: true,
       tailable: true,
+      json: false,
       timestamp: () => moment().format('MM/DD/YYYY HH:mm:ss:SSS')
     })
   ],
