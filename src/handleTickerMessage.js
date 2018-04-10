@@ -2,14 +2,18 @@
 
 const logger = require('./logger')
 const { periods, granularities } = require('./config')
-const smallerPeriod = Math.min(...periods)
-const smallerGranularity = Math.min(...granularities)
 const BigNumber = require('bignumber.js')
 const { last, clone } = require('lodash')
-const { percentChange } = require('./utilities')
+const { percentChange, switchSide } = require('./utilities')
+
+const largerPeriod = Math.max(...periods)
+const largerGranularity = Math.max(...granularities)
+const smallerPeriod = Math.min(...periods)
+const smallerGranularity = Math.min(...granularities)
 
 let lastTickerPrice
 let numberOfTicksBelowEma = 0
+let numberOfTicksAboveEma = 0
 
 module.exports = (message, priceTracker) => {
   // If this isn't a ticker message or is and doesn't have a trade id
@@ -70,6 +74,7 @@ module.exports = (message, priceTracker) => {
     }
   }
 
+  // Buying Logic:
   // Count the number of tick cycles where price is below and the smaller is lower
   if (priceIsBelowEma && smallerPeriodIsLower) {
     numberOfTicksBelowEma++
@@ -81,18 +86,20 @@ module.exports = (message, priceTracker) => {
 
     // When both the lower granularity EMAs are within .01% of each other (meaning they are about to cross)
     // and have a zero or positive percent difference between the current trade price
-    if (percentChange(emaOne, emaTwo).abs().isGreaterThanOrEqualTo(0.01) &&
-    percentChange(emaOne, lastTickerPrice).isGreaterThanOrEqualTo(0)) {
-      logger.info(`${message.product_id}: Place buy order for ${message.best_bid}`)
-      numberOfTicksBelowEma = 0
+    if (percentChange(emaTwo, emaOne).abs().isGreaterThanOrEqualTo(0.01) &&
+      percentChange(emaOne, lastTickerPrice).isGreaterThanOrEqualTo(0)) {
       // Check account balances if we can buy
       // If we can, calculate the total coins we can buy based on the available USD
-      // put in a buy order for the `best_bid` price
+      // put in a buy order for the current price less one cent
+      logger.info(`${message.product_id}: Place buy order for ${message.price.minus(0.01).toFixed(2)}`)
+
       // reset numberOfTicksBelowEma
+      numberOfTicksBelowEma = 0
     }
   }
 
   // Selling logic:
+  // Watch the larger granularity
   //
 
   lastTickerPrice = clone(message.price)
