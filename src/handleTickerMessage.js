@@ -84,6 +84,8 @@ module.exports = (message, priceTracker) => {
   if (numberOfTicksBelowEma > 1) {
     const [emaOne, emaTwo] = periods.map(p => new BigNumber(last(productData[smallerGranularity].indicators.ema[p])))
 
+    logger.debug(`${message.product_id}: numberOfTicksBelowEma=${numberOfTicksBelowEma}; emaOne=${emaOne}; emaTwo=${emaTwo}; percent change of emas=${percentChange(emaTwo, emaOne)}; percent change of ema and last price=${percentChange(emaOne, lastTickerPrice)}`)
+
     // When both the lower granularity EMAs are within .01% of each other (meaning they are about to cross)
     // and have a zero or positive percent difference between the current trade price
     if (percentChange(emaTwo, emaOne).abs().isGreaterThanOrEqualTo(0.01) &&

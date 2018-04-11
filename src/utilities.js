@@ -40,8 +40,17 @@ exports.getBigNumber = value => {
 }
 
 exports.percentChange = (previous, current) => {
-  previous = exports.getBigNumber(previous)
-  current = exports.getBigNumber(current)
-
   return current.minus(previous).dividedBy(previous).multipliedBy(100)
+}
+
+exports.switchSide = (currentSide, product) => {
+  if (currentSide === 'buy') {
+    currentSide = 'sell'
+  } else {
+    currentSide = 'buy'
+  }
+
+  logger.verbose(`${product}: Changing side to ${currentSide}`)
+
+  return currentSide
 }
