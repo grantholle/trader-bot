@@ -3,7 +3,7 @@
 const logger = require('./logger')
 const { products, periods } = require('./config')
 const BigNumber = require('bignumber.js')
-const { ema, predictPattern } = require('technicalindicators')
+const { ema } = require('technicalindicators')
 const { last, takeRight } = require('lodash')
 
 exports.highLowSpread = candle => candle.high.minus(candle.low).toFixed(2)
@@ -22,10 +22,6 @@ exports.getIndicators = async (product, granularity, values) => {
     indicators.ema[period] = avg.map(i => new BigNumber(i.toString()))
 
     logger.verbose(`${product}: EMA${period} for last ${granularity / 60}min candle: ${last(indicators.ema[period]).toFixed(2)}`)
-
-    // Predict the pattern
-    indicators.pattern[period] = await predictPattern({ values: avg })
-    logger.verbose(`${product}: Pattern detection based on EMA${period}`, indicators.pattern[period])
   }
 
   return indicators
