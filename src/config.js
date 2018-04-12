@@ -9,3 +9,6 @@ exports.granularities = process.env.GDAX_GRANULARITIES.split(',').map(Number)
 
 // Whether to use the sandbox api endpoints
 exports.sandbox = process.env.USE_SANDBOX === 'true'
+
+// Whether to submit real trades to gdax or just log potential ones
+exports.liveTrade = process.env.LIVE_TRADE && process.env.LIVE_TRADE === 'true'
