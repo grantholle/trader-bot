@@ -14,13 +14,8 @@ module.exports = () => {
   const priceTracker = {}
 
   return new Promise(async (resolve, reject) => {
-    accountBalances().then(accounts => {
-      priceTracker.accounts = accounts
-
-      for (const acct of Object.keys(priceTracker.accounts)) {
-        logger.verbose(`${acct} available funds: ${priceTracker.accounts[acct].available}`)
-      }
-    })
+    // Log the balances at the beginning of the trading period for kicks and giggles
+    accountBalances().catch(logger.error)
 
     // Iterate the products
     for (const product of products) {
