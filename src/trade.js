@@ -5,6 +5,7 @@ const BigNumber = require('bignumber.js')
 const getAccounts = require('./accounts')
 const logger = require('./logger')
 const gdaxProducts = require('./products')
+const { liveTrade } = require('./config')
 
 // Buying requires a little bit of preparation
 // We have to check account available balances
@@ -42,7 +43,13 @@ const buy = async (product, price) => {
       product_id: product
     }
 
-    return gdax.buy(params)
+    // If we're live trading, submit the trade
+    // Otherwise just send the dummy data back
+    if (liveTrade) {
+      return gdax.buy(params)
+    }
+
+    return params
   }
 }
 
