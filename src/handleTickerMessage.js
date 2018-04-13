@@ -84,6 +84,11 @@ module.exports = (message, priceTracker) => {
   const currentPriceChangeFromSmallerEma = percentChange(emaOne, message.price)
 
   // Buying Logic:
+  // If the drop has been over 10% in the last 15 mins, don't think just buy some!
+  if (currentPriceChangeFromSmallerEma.isGreaterThan(10)) {
+    return submitTrade('buy', message.product_id, message.price.minus(0.01))
+  }
+
   // Count the number of tick cycles where price is below and the smaller is lower
   // else if the price has jumped relatively a lot, lower the count until it's back to zero
   if (priceIsBelowEma && smallerPeriodIsLower) {
@@ -107,11 +112,20 @@ module.exports = (message, priceTracker) => {
       // reset down trending ticks back to zero
       numberOfTicksBelowEma = 0
     }
+
+    // Just return here from the function since we're not
+    // in a selling situation
+    return
   }
 
   // Selling logic:
-  // Watch the larger granularity
-  //
+  // Watch the larger granularity and the larger period EMA
+  const largestEma = new BigNumber(last(productData[largerGranularity].indicators.ema[largerPeriod]))
+
+  // If the jump has been over 10% in the last 15 mins, don't think just sell!
+  if (percentChange(largestEma, message.price).isGreaterThan(10)) {
+    return submitTrade('sell', message.product_id, message.price.plus(0.01))
+  }
 
   lastTickerPrice = clone(message.price)
 }
