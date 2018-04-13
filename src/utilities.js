@@ -24,13 +24,12 @@ exports.getIndicators = async (product, granularity, values) => {
     logger.verbose(`${product}: EMA${period} for last ${granularity / 60}min candle: ${last(indicators.ema[period]).toFixed(2)}`)
 
     // RSI
-    indicators.rsi[period] = rsi({ period, values })
-    logger.verbose(`${product}: RSI${period} for last ${granularity / 60}min candle: ${last(indicators.rsi[period]).toFixed(2)}`)
+    indicators.rsi[period] = new BigNumber(last(rsi({ period, values })))
+    logger.verbose(`${product}: RSI${period} for last ${granularity / 60}min candle: ${indicators.rsi[period].toFixed(2)}`)
 
     // BB
-    indicators.bb[period] = bollingerbands({ period, values, stdDev: 2 })
-    const lastBb = last(indicators.bb[period])
-    logger.verbose(`${product}: BB${period} for last ${granularity / 60}min candle: lower: ${lastBb.lower.toFixed(2)}, middle: ${lastBb.middle.toFixed(2)}, high: ${lastBb.upper.toFixed(2)}`)
+    indicators.bb[period] = last(bollingerbands({ period, values, stdDev: 2 }))
+    logger.verbose(`${product}: BB${period} for last ${granularity / 60}min candle: lower: ${indicators.bb[period].lower.toFixed(2)}, middle: ${indicators.bb[period].middle.toFixed(2)}, high: ${indicators.bb[period].upper.toFixed(2)}`)
   }
 
   return indicators
