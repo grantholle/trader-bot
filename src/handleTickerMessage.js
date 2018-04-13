@@ -78,6 +78,36 @@ module.exports = (message, priceTracker) => {
     }
   }
 
+  /**
+   * Currently the logic is fairly conservative, but if we want it more aggressive, then...
+   * We also need to track the historical percent change of the candles,
+   * not only the percent change at the moment. Currently it only executes
+   * a buy when it's been trending down for a while, but if there's a big spike
+   * then a dip, then a spike again, the currently logic doens't account for the
+   * speed at which it could drop after it's been trending up. For example:
+   *
+   * Suppose the price starts trending up quite a bit, then within one 15min candle,
+   * drops significantly. The smaller period and smaller granularity candles will reflect that
+   * but it may take a long time for the EMA to actually reflect that, if at all.
+   * Potentially, the current trade price wouldn't actually dip the last EMA.
+   * Even if it did for a short period of time, the change would eventually be positive, therefore
+   * not tracked by the below logic (price below all EMAs).
+   * There could be a chance for a buy, but we missed it because of the more conservative logic.
+   * The smaller EMAs would cross to trend down, then cross again to trend up before the bigger
+   * EMA had time to catch up. Likewise for a selling opportunity.
+   *
+   * If things have trended up for a long time, suddenly drop, then pick back up again,
+   * the price might not cross below that EMA before it starts going back up
+   *
+   * The percent change of the candle (open, close) would be an indicator in this situation.
+   * The price trends up for a while, closing a 15min candle at 130, then drops in the next candle closing at 126.
+   * The EMA was 126, so the price is "below all EMAs", but the price is above the large EMA
+   * before the 1min EMAs cross to indicate an upward trend.
+   *
+   * This is a riskier strategy, though. We could prematurely buy and the price drop even lower.
+   * Just thinking...
+   */
+
   // Holds the 2 emas of the smaller granularity
   const [emaOne, emaTwo] = periods.map(p => new BigNumber(last(productData[smallerGranularity].indicators.ema[p])))
   const smallerGranularityEmaPeriodsChange = percentChange(emaTwo, emaOne)
@@ -120,6 +150,8 @@ module.exports = (message, priceTracker) => {
 
   // Selling logic:
   // Watch the larger granularity and the larger period EMA
+  // If the current price is consistently trending up on that EMA
+  // meaning that the percent change
   const largestEma = new BigNumber(last(productData[largerGranularity].indicators.ema[largerPeriod]))
 
   // If the jump has been over 10% in the last 15 mins, don't think just sell!
