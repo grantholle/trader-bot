@@ -56,10 +56,14 @@ module.exports = (message, priceTracker) => {
 
     // Check if the current price is above/below the ema's
     for (const period of periods) {
-      const lastEma = new BigNumber(last(productData[granularity].indicators.ema[period]))
+      const ind = productData[granularity].indicators
+      const lastEma = new BigNumber(last(ind.ema[period]))
       const percent = percentChange(lastEma, candle.close)
 
-      logger.debug(`${message.product_id}: Current price (${candle.close.toFixed(2)}) different from ${granularity / 60}min EMA${period} (${lastEma.toFixed(2)}) by ${percent.toFixed(2)}%`)
+      logger.debug(`${message.product_id}: ${granularity / 60}min EMA${period} (${lastEma.toFixed(2)}) difference: ${percent.toFixed(2)}%`)
+      logger.debug(`${message.product_id}: RSI (${ind.rsi[period].toFixed(2)}) difference: ${percentChange(ind.rsi[period], candle.close).toFixed(2)}`)
+      logger.debug(`${message.product_id}: BB Upper (${ind.bb[period].upper.toFixed(2)}): ${percentChange(ind.bb[period].upper, candle.close).toFixed(2)}`)
+      logger.debug(`${message.product_id}: BB Lower (${ind.bb[period].lower.toFixed(2)}): ${percentChange(ind.bb[period].lower, candle.close).toFixed(2)}`)
 
       // Buying logic:
       // Both granularities' and periods' percent change is negative
