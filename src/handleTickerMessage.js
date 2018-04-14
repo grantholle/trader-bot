@@ -61,9 +61,8 @@ module.exports = (message, priceTracker) => {
       const percent = percentChange(lastEma, candle.close)
 
       logger.debug(`${message.product_id}: ${granularity / 60}min EMA${period} (${lastEma.toFixed(2)}) difference: ${percent.toFixed(2)}%`)
-      logger.debug(`${message.product_id}: RSI${period}: ${ind.rsi[period].toFixed(2)}`)
-      logger.debug(`${message.product_id}: BB Upper (${ind.bb[period].upper.toFixed(2)}): ${percentChange(ind.bb[period].upper, candle.close).toFixed(2)}`)
-      logger.debug(`${message.product_id}: BB Lower (${ind.bb[period].lower.toFixed(2)}): ${percentChange(ind.bb[period].lower, candle.close).toFixed(2)}`)
+      logger.debug(`${message.product_id}: BB Upper (${ind.bb[period].upper.toFixed(2)}): ${percentChange(ind.bb[period].upper, candle.close).toFixed(2)}%`)
+      logger.debug(`${message.product_id}: BB Lower (${ind.bb[period].lower.toFixed(2)}): ${percentChange(ind.bb[period].lower, candle.close).toFixed(2)}%`)
 
       // Buying logic:
       // Both granularities' and periods' percent change is negative
