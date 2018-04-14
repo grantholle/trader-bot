@@ -25,7 +25,7 @@ const buy = async (product, price) => {
     throw err
   }
 
-  const dollars = new BigNumber(balance.USD)
+  const dollars = new BigNumber(balance.USD.available)
   productData = productData[product]
 
   // If we can, calculate the total coins we can buy based on the available USD
