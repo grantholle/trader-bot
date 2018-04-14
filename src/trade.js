@@ -38,7 +38,7 @@ const buy = async (product, price) => {
     // Probably poll to make sure the order wasn't rejected somehow
     // Round down at 8 decimal places
     const params = {
-      size: coinsToBuy.toFixed(8, 1),
+      size: coinsToBuy.toFixed(8, BigNumber.ROUND_DOWN),
       price: price.toFixed(2),
       product_id: product
     }
