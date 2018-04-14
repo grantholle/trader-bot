@@ -44,6 +44,9 @@ exports.getBigNumber = value => {
 }
 
 exports.percentChange = (previous, current) => {
+  previous = exports.getBigNumber(previous)
+  current = exports.getBigNumber(current)
+
   return current.minus(previous).dividedBy(previous).multipliedBy(100)
 }
 
