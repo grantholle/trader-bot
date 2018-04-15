@@ -9,31 +9,26 @@ const { liveTrade } = require('./config')
 
 // Buying requires a little bit of preparation
 // We have to check account available balances
-const buy = async (product, price) => {
+const buy = async (product, price, balance, productData) => {
+  price = price.minus(productData.quote_increment)
+
   // Check if there's a pending order from a time that didn't get fulfilled
   // If there is, cancel it? Or don't process the new buy?
   // I say cancel an existing unfulfilled order and place the new one
 
-  let balance
-  let productData
-
-  try {
-    // Check account balances and product information to make trade
-    [balance, productData] = await Promise.all([getAccounts(), gdaxProducts()])
-  } catch (err) {
-    logger.error(`Failed fetching account information or gdax product information`)
-    throw err
-  }
-
   const dollars = new BigNumber(balance.USD.available)
-  productData = productData[product]
 
   // If we can, calculate the total coins we can buy based on the available USD
   // available USD divided by message.price = number of coins we want to buy
   const coinsToBuy = dollars.dividedBy(price)
 
+  // This will never happen...
+  if (coinsToBuy.isGreaterThan(productData.base_max_size)) {
+    coinsToBuy = new BigNumber(productData.base_max_size)
+  }
+
   // Check to make sure it's above the min and below the max allowed trade quantities
-  if (coinsToBuy.isGreaterThanOrEqualTo(productData.base_min_size) && coinsToBuy.isLessThanOrEqualTo(productData.base_max_size)) {
+  if (coinsToBuy.isGreaterThanOrEqualTo(productData.base_min_size)) {
     // Execute the trade
     // Probably poll to make sure the order wasn't rejected somehow
     // Round down at 8 decimal places
@@ -53,8 +48,36 @@ const buy = async (product, price) => {
   }
 }
 
-const sell = async () => {
+const sell = async (product, price, balance, productData) => {
+  price = price.plus(productData.quote_increment)
 
+  const currency = product.split('-')[0]
+  const coinsToSell = new BigNumber(balance[currency].available)
+
+  // This will probably never happen...
+  if (coinsToSell.isGreaterThan(productData.base_max_size)) {
+    coinsToSell = new BigNumber(productData.base_max_size)
+  }
+
+  // Check to make sure it's above the min and below the max allowed trade quantities
+  if (coinsToSell.isGreaterThanOrEqualTo(productData.base_min_size)) {
+    // Execute the trade
+    // Probably poll to make sure the order wasn't rejected somehow
+    // Round down at 8 decimal places
+    const params = {
+      size: coinsToSell.toFixed(8, BigNumber.ROUND_DOWN),
+      price: price.toFixed(2),
+      product_id: product
+    }
+
+    // If we're live trading, submit the trade
+    // Otherwise just send the dummy data back
+    if (liveTrade) {
+      return gdax.sell(params)
+    }
+
+    return params
+  }
 }
 
 const tradeActions = { buy, sell }
@@ -70,9 +93,20 @@ const tradeActions = { buy, sell }
  */
 module.exports = async (side, product, price) => {
   let res = false
+  let balance
+  let productData
 
   try {
-    res = await tradeActions[side](product, price)
+    // Check account balances and product information to make trade
+    [balance, productData] = await Promise.all([getAccounts(), gdaxProducts()])
+    productData = productData[product]
+  } catch (err) {
+    logger.error(`Failed fetching account information or gdax product information`, err)
+    return
+  }
+
+  try {
+    res = await tradeActions[side](product, price, balance, productData)
   } catch (err) {
     logger.error(`${product}: Failed placing limit ${side} order`, err)
   }
