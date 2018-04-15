@@ -18,6 +18,7 @@ let numberOfTicksBelowEma = 0
 let numberOfTicksAboveEma = 0
 
 const MINIMUM_LOW_PRICE_TREND_UNTIL_TRADE = 2
+const MINIMUM_HIGH_PRICE_TREND_UNTIL_TRADE = 3
 
 module.exports = (message, priceTracker) => {
   // If this isn't a ticker message or is and doesn't have a trade id
@@ -37,7 +38,9 @@ module.exports = (message, priceTracker) => {
   const productData = priceTracker[message.product_id]
 
   let priceIsBelowEma = true
+  let priceIsAboveEma = true
   let smallerPeriodIsLower = true
+  let smallerPeriodIsHigher = true
 
   // Set the current candle price data for each granularity
   for (const granularity of granularities) {
@@ -56,27 +59,29 @@ module.exports = (message, priceTracker) => {
 
     // Check if the current price is above/below the ema's
     for (const period of periods) {
-      const ind = productData[granularity].indicators
-      const lastEma = new BigNumber(last(ind.ema[period]))
+      const ind = productData[granularity].indicators[period]
+      const lastEma = new BigNumber(last(ind.ema))
       const percent = percentChange(lastEma, candle.close)
 
       logger.debug(`${message.product_id}: ${granularity / 60}min EMA${period} (${lastEma.toFixed(2)}) difference: ${percent.toFixed(2)}%`)
-      logger.debug(`${message.product_id}: BB Upper (${ind.bb[period].upper.toFixed(2)}): ${percentChange(ind.bb[period].upper, candle.close).toFixed(2)}%`)
-      logger.debug(`${message.product_id}: BB Lower (${ind.bb[period].lower.toFixed(2)}): ${percentChange(ind.bb[period].lower, candle.close).toFixed(2)}%`)
+      logger.debug(`${message.product_id}: BB Upper (${ind.bb.upper.toFixed(2)}): ${percentChange(ind.bb.upper, candle.close).toFixed(2)}%`)
+      logger.debug(`${message.product_id}: BB Lower (${ind.bb.lower.toFixed(2)}): ${percentChange(ind.bb.lower, candle.close).toFixed(2)}%`)
 
       // Buying logic:
       // Both granularities' and periods' percent change is negative
       if (percent.isPositive()) {
         priceIsBelowEma = false
+      } else {
+        priceIsAboveEma = false
       }
 
       // Both granularities' and periods' EMA12 is below the EMA26 (seemingly starting to trend down)
-      if (period !== smallerPeriod) {
-        const smallerLastEma = new BigNumber(last(productData[granularity].indicators.ema[smallerPeriod]))
+      if (!ind.smallerEmaBelowLarger) {
+        smallerPeriodIsLower = false
+      }
 
-        if (smallerLastEma.isGreaterThan(lastEma)) {
-          smallerPeriodIsLower = false
-        }
+      if (!ind.largerEmaBelowSmaller) {
+        smallerPeriodIsHigher = false
       }
     }
   }
@@ -112,14 +117,14 @@ module.exports = (message, priceTracker) => {
    */
 
   // Holds the 2 emas of the smaller granularity
-  const [emaOne, emaTwo] = periods.map(p => new BigNumber(last(productData[smallerGranularity].indicators.ema[p])))
+  const [emaOne, emaTwo] = periods.map(p => new BigNumber(last(productData[smallerGranularity].indicators[p].ema)))
   const smallerGranularityEmaPeriodsChange = percentChange(emaTwo, emaOne)
   const currentPriceChangeFromSmallerEma = percentChange(emaOne, message.price)
 
   // Buying Logic:
   // If the drop has been over 10% in the last 15 mins, don't think just buy some!
   if (currentPriceChangeFromSmallerEma.isGreaterThan(10)) {
-    return submitTrade('buy', message.product_id, message.price.minus(0.01))
+    return submitTrade('buy', message.product_id, message.price)
   }
 
   // Count the number of tick cycles where price is below and the smaller is lower
@@ -140,7 +145,7 @@ module.exports = (message, priceTracker) => {
     if (smallerGranularityEmaPeriodsChange.isGreaterThanOrEqualTo(-0.01) && currentPriceChangeFromSmallerEma.isGreaterThanOrEqualTo(-0.001)) {
       // Attempt to submit the trade
       // We're wanting buying at one cent below the current trade price
-      submitTrade('buy', message.product_id, message.price.minus(0.01))
+      submitTrade('buy', message.product_id, message.price)
 
       // reset down trending ticks back to zero
       numberOfTicksBelowEma = 0
@@ -155,11 +160,40 @@ module.exports = (message, priceTracker) => {
   // Watch the larger granularity and the larger period EMA
   // If the current price is consistently trending up on that EMA
   // meaning that the percent change
-  const largestEma = new BigNumber(last(productData[largerGranularity].indicators.ema[largerPeriod]))
+  const largestEma = new BigNumber(last(productData[largerGranularity].indicators[largerPeriod].ema))
 
   // If the jump has been over 10% in the last 15 mins, don't think just sell!
   if (percentChange(largestEma, message.price).isGreaterThan(10)) {
-    return submitTrade('sell', message.product_id, message.price.plus(0.01))
+    return submitTrade('sell', message.product_id, message.price)
+  }
+
+  // Count the number of tick cycles where price is above and the smaller EMA is above the larger period's
+  // else if the price has dropped a lot relatively, lower the count until it's back to zero
+  if (priceIsAboveEma && smallerPeriodIsHigher) {
+    numberOfTicksAboveEma++
+  } else if (numberOfTicksAboveEma > 0 && currentPriceChangeFromSmallerEma.isLessThan(0.02)) {
+    numberOfTicksAboveEma--
+  }
+
+  // It has done this for at least 2? ticker cycles
+  if (numberOfTicksBelowEma >= MINIMUM_HIGH_PRICE_TREND_UNTIL_TRADE) {
+    logger.debug(`${message.product_id}: Number of ticks where the trade price has been above all EMAs: ${numberOfTicksAboveEma}`)
+    logger.debug(`${message.product_id}: Smaller granularity EMA percent difference: ${smallerGranularityEmaPeriodsChange}`)
+
+    // When both the smaller granularity EMAs are within -.01% of each other (meaning they are about to cross or have already)
+    // and have a very large negative or positive percent difference between the current trade price
+    if (smallerGranularityEmaPeriodsChange.isLessThanOrEqualTo(0.01) && currentPriceChangeFromSmallerEma.isLessThanOrEqualTo(0.001)) {
+      // Attempt to submit the trade
+      // Sell at one cent above the current trade price
+      submitTrade('sell', message.product_id, message.price)
+
+      // reset down trending ticks back to zero
+      numberOfTicksAboveEma = 0
+    }
+
+    // Just return here from the function since we're not
+    // in a selling situation
+    return
   }
 
   lastTickerPrice = clone(message.price)

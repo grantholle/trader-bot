@@ -5,32 +5,36 @@ const { products, periods } = require('./config')
 const BigNumber = require('bignumber.js')
 const { ema, rsi, bollingerbands } = require('technicalindicators')
 const { last, takeRight } = require('lodash')
+const largerPeriod = Math.max(...periods)
+const smallerPeriod = Math.min(...periods)
 
 exports.highLowSpread = candle => candle.high.minus(candle.low).toFixed(2)
 
 exports.candleChange = candle => candle.close.minus(candle.open).toFixed(2)
 
 exports.getIndicators = async (product, granularity, values) => {
-  const indicators = {
-    ema: {},
-    rsi: {},
-    bb: {}
-  }
+  const indicators = {}
 
   for (const period of periods) {
+    indicators[period] = {}
+
     // Calculate the period's EMA
     const avg = ema({ period, values })
-    indicators.ema[period] = avg.map(i => new BigNumber(i.toString()))
-    logger.verbose(`${product}: EMA${period} for last ${granularity / 60}min candle: ${last(indicators.ema[period]).toFixed(2)}`)
+    indicators[period].ema = avg.map(i => new BigNumber(i.toString()))
+    logger.verbose(`${product}: EMA${period} for last ${granularity / 60}min candle: ${last(indicators[period].ema).toFixed(2)}`)
 
     // RSI
-    indicators.rsi[period] = new BigNumber(last(rsi({ period, values })))
-    logger.verbose(`${product}: RSI${period} for last ${granularity / 60}min candle: ${indicators.rsi[period].toFixed(2)}`)
+    indicators[period].rsi = new BigNumber(last(rsi({ period, values })))
+    logger.verbose(`${product}: RSI${period} for last ${granularity / 60}min candle: ${indicators[period].rsi.toFixed(2)}`)
 
     // BB
-    indicators.bb[period] = last(bollingerbands({ period, values, stdDev: 2 }))
-    logger.verbose(`${product}: BB${period} for last ${granularity / 60}min candle: lower: ${indicators.bb[period].lower.toFixed(2)}, middle: ${indicators.bb[period].middle.toFixed(2)}, high: ${indicators.bb[period].upper.toFixed(2)}`)
+    indicators[period].bb = last(bollingerbands({ period, values, stdDev: 2 }))
+    logger.verbose(`${product}: BB${period} for last ${granularity / 60}min candle: lower: ${indicators[period].bb.lower.toFixed(2)}, middle: ${indicators[period].bb.middle.toFixed(2)}, high: ${indicators[period].bb.upper.toFixed(2)}`)
   }
+
+  indicators.smallerEmaBelowLarger = last(indicators[smallerPeriod].ema).isLessThan(last(indicators[largerPeriod].ema))
+  indicators.largerEmaBelowSmaller = !indicators.smallerEmaBelowLarger
+  indicators.emaPercentDifference = percentChange(last(indicators[largerPeriod].ema), last(indicators[smallerPeriod].ema))
 
   return indicators
 }
