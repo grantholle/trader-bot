@@ -34,7 +34,7 @@ exports.getIndicators = async (product, granularity, values) => {
 
   indicators.smallerEmaBelowLarger = last(indicators[smallerPeriod].ema).isLessThan(last(indicators[largerPeriod].ema))
   indicators.largerEmaBelowSmaller = !indicators.smallerEmaBelowLarger
-  indicators.emaPercentDifference = percentChange(last(indicators[largerPeriod].ema), last(indicators[smallerPeriod].ema))
+  indicators.emaPercentDifference = exports.percentChange(last(indicators[largerPeriod].ema), last(indicators[smallerPeriod].ema))
 
   return indicators
 }

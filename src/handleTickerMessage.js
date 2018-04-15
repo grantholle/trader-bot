@@ -76,11 +76,11 @@ module.exports = (message, priceTracker) => {
       }
 
       // Both granularities' and periods' EMA12 is below the EMA26 (seemingly starting to trend down)
-      if (!ind.smallerEmaBelowLarger) {
+      if (!productData[granularity].indicators.smallerEmaBelowLarger) {
         smallerPeriodIsLower = false
       }
 
-      if (!ind.largerEmaBelowSmaller) {
+      if (!productData[granularity].indicators.largerEmaBelowSmaller) {
         smallerPeriodIsHigher = false
       }
     }
@@ -126,7 +126,7 @@ module.exports = (message, priceTracker) => {
 
   // Buying Logic:
   // If the drop has been over 10% in the last 15 mins, don't think just buy some!
-  if (percentChange(largestEma, message.price).isLessThan(10)) {
+  if (percentChange(largestEma, message.price).isLessThan(-10)) {
     return submitTrade('buy', message.product_id, message.price)
   }
 
