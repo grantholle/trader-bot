@@ -122,10 +122,11 @@ module.exports = (message, priceTracker) => {
   const [emaOne, emaTwo] = periods.map(p => new BigNumber(last(productData[smallerGranularity].indicators[p].ema)))
   const smallerGranularityEmaPeriodsChange = percentChange(emaTwo, emaOne)
   const currentPriceChangeFromSmallerEma = percentChange(emaOne, message.price)
+  const largestEma = new BigNumber(last(productData[largerGranularity].indicators[largerPeriod].ema))
 
   // Buying Logic:
   // If the drop has been over 10% in the last 15 mins, don't think just buy some!
-  if (currentPriceChangeFromSmallerEma.isGreaterThan(10)) {
+  if (percentChange(largestEma, message.price).isLessThan(10)) {
     return submitTrade('buy', message.product_id, message.price)
   }
 
@@ -144,7 +145,8 @@ module.exports = (message, priceTracker) => {
 
     // When both the smaller granularity EMAs are within -.01% of each other (meaning they are about to cross or have already)
     // and have a very large negative or positive percent difference between the current trade price
-    if (smallerGranularityEmaPeriodsChange.isGreaterThanOrEqualTo(-0.01) && currentPriceChangeFromSmallerEma.isGreaterThanOrEqualTo(-0.001)) {
+    // if (smallerGranularityEmaPeriodsChange.isGreaterThanOrEqualTo(-0.01) && currentPriceChangeFromSmallerEma.isGreaterThanOrEqualTo(-0.001)) {
+    if (smallerGranularityEmaPeriodsChange.isGreaterThanOrEqualTo(-0.05)) {
       // Attempt to submit the trade
       // We're wanting buying at one cent below the current trade price
       submitTrade('buy', message.product_id, message.price)
@@ -159,11 +161,6 @@ module.exports = (message, priceTracker) => {
   }
 
   // Selling logic:
-  // Watch the larger granularity and the larger period EMA
-  // If the current price is consistently trending up on that EMA
-  // meaning that the percent change
-  const largestEma = new BigNumber(last(productData[largerGranularity].indicators[largerPeriod].ema))
-
   // If the jump has been over 10% in the last 15 mins, don't think just sell!
   if (percentChange(largestEma, message.price).isGreaterThan(10)) {
     return submitTrade('sell', message.product_id, message.price)
@@ -182,9 +179,10 @@ module.exports = (message, priceTracker) => {
     logger.debug(`${message.product_id}: Number of ticks where the trade price has been above all EMAs: ${numberOfTicksAboveEma}`)
     logger.debug(`${message.product_id}: Smaller granularity EMA percent difference: ${smallerGranularityEmaPeriodsChange}`)
 
-    // When both the smaller granularity EMAs are within -.01% of each other (meaning they are about to cross or have already)
+    // When both the smaller granularity EMAs are within .01% of each other (meaning they are about to cross or have already)
     // and have a very large negative or positive percent difference between the current trade price
-    if (smallerGranularityEmaPeriodsChange.isLessThanOrEqualTo(0.01) && currentPriceChangeFromSmallerEma.isLessThanOrEqualTo(0.001)) {
+    // if (smallerGranularityEmaPeriodsChange.isLessThanOrEqualTo(0.01) && currentPriceChangeFromSmallerEma.isLessThanOrEqualTo(0.001)) {
+    if (smallerGranularityEmaPeriodsChange.isLessThanOrEqualTo(0.05)) {
       // Attempt to submit the trade
       // Sell at one cent above the current trade price
       submitTrade('sell', message.product_id, message.price)
@@ -192,9 +190,5 @@ module.exports = (message, priceTracker) => {
       // reset down trending ticks back to zero
       numberOfTicksAboveEma = 0
     }
-
-    // Just return here from the function since we're not
-    // in a selling situation
-    return
   }
 }
