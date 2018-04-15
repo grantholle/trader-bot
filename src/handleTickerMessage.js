@@ -86,6 +86,8 @@ module.exports = (message, priceTracker) => {
     }
   }
 
+  lastTickerPrice = clone(message.price)
+
   /**
    * Currently the logic is fairly conservative, but if we want it more aggressive, then...
    * We also need to track the historical percent change of the candles,
@@ -195,6 +197,4 @@ module.exports = (message, priceTracker) => {
     // in a selling situation
     return
   }
-
-  lastTickerPrice = clone(message.price)
 }
