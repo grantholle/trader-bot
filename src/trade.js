@@ -6,6 +6,7 @@ const getAccounts = require('./accounts')
 const logger = require('./logger')
 const gdaxProducts = require('./products')
 const { liveTrade } = require('./config')
+const pusher = require('./pushbullet')
 
 // Buying requires a little bit of preparation
 // We have to check account available balances
@@ -116,5 +117,8 @@ module.exports = async (side, product, price) => {
     return
   }
 
-  logger.info(`${product}: Placed limit ${side} order for ${res.size} coins @ $${res.price}`, res)
+  const message = `${product}: Placed limit ${side} order for ${res.size} coins @ $${res.price}`
+
+  pusher[side](message)
+  logger.info(message, res)
 }
