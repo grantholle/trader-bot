@@ -74,9 +74,9 @@ module.exports = (message, priceTracker) => {
       }
 
       if (bbUpper.isGreaterThan(-.1)) {
-        logger.debug(`${message.product_id}: Price ${bbUpper.isPositive() ? 'above' : 'near'} BB upper (${ind.bb.upper.toFixed(2)}): ${bbUpper.toFixed(2)}%`)
+        logger.debug(`${message.product_id}: Price ${bbUpper.isPositive() ? 'above' : 'near'} the upper BB band (${ind.bb.upper.toFixed(2)}): ${bbUpper.toFixed(2)}%`)
       } else if (bbLower.isLessThan(.1)) {
-        logger.debug(`${message.product_id}: Price ${bbLower.isNegative() ? 'below' : 'near'} BB lower (${ind.bb.lower.toFixed(2)}): ${bbLower.toFixed(2)}%`)
+        logger.debug(`${message.product_id}: Price ${bbLower.isNegative() ? 'below' : 'near'} the lower BB band (${ind.bb.lower.toFixed(2)}): ${bbLower.toFixed(2)}%`)
       }
 
       // Buying logic:
