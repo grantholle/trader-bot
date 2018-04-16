@@ -28,7 +28,7 @@ module.exports = (message, priceTracker) => {
 
   message.price = new BigNumber(message.price)
 
-  logger.verbose(`${message.product_id}: Trade: ${message.side} @ ${message.price.toFixed(2)} (${message.last_size})`)
+  logger.verbose(`${message.product_id}: Trade: ${message.side} @ $${message.price.toFixed(2)} (${message.last_size})`)
 
   // If it was the same price as last time, don't continue
   if (lastTickerPrice && message.price.isEqualTo(lastTickerPrice)) {
@@ -74,9 +74,9 @@ module.exports = (message, priceTracker) => {
       }
 
       if (bbUpper.isGreaterThan(-.1)) {
-        logger.debug(`${message.product_id}: Price ${bbUpper.isPositive() ? 'above' : 'near'} the upper BB band (${ind.bb.upper.toFixed(2)}): ${bbUpper.toFixed(2)}%`)
+        logger.debug(`${message.product_id}: Price ${bbUpper.isPositive() ? 'above' : 'near'} the upper BB${period} band (${ind.bb.upper.toFixed(2)}) by ${bbUpper.toFixed(2)}%, indicating a possible sell`)
       } else if (bbLower.isLessThan(.1)) {
-        logger.debug(`${message.product_id}: Price ${bbLower.isNegative() ? 'below' : 'near'} the lower BB band (${ind.bb.lower.toFixed(2)}): ${bbLower.toFixed(2)}%`)
+        logger.debug(`${message.product_id}: Price ${bbLower.isNegative() ? 'below' : 'near'} the lower BB${period} band (${ind.bb.lower.toFixed(2)}) by ${bbLower.toFixed(2)}%, indicating possible buy`)
       }
 
       // Buying logic:
