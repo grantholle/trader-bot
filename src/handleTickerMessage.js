@@ -68,9 +68,9 @@ module.exports = (message, priceTracker) => {
       logger.debug(`${message.product_id}: ${granularity / 60}min EMA${period} (${lastEma.toFixed(2)}) difference: ${percent.toFixed(2)}%`)
 
       if (ind.rsi.isGreaterThan(70)) {
-        logger.debug(`${message.product_id}: Possibly being overbought: RSI${period} is ${ind.rsi.toFixed(2)}`)
+        logger.debug(`${message.product_id}: Possibly being overbought: ${granularity / 60}min RSI${period} is ${ind.rsi.toFixed(2)}, indicating a possible sell`)
       } else if (ind.rsi.isLessThan(30)) {
-        logger.debug(`${message.product_id}: Possibly being oversold: RSI${period} is ${ind.rsi.toFixed(2)}`)
+        logger.debug(`${message.product_id}: Possibly being oversold: ${granularity / 60}min RSI${period} is ${ind.rsi.toFixed(2)}, indicating possible buy`)
       }
 
       if (bbUpper.isGreaterThan(-.1)) {
