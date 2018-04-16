@@ -62,10 +62,22 @@ module.exports = (message, priceTracker) => {
       const ind = productData[granularity].indicators[period]
       const lastEma = new BigNumber(last(ind.ema))
       const percent = percentChange(lastEma, candle.close)
+      const bbUpper = percentChange(ind.bb.upper, candle.close)
+      const bbLower = percentChange(ind.bb.lower, candle.close)
 
       logger.debug(`${message.product_id}: ${granularity / 60}min EMA${period} (${lastEma.toFixed(2)}) difference: ${percent.toFixed(2)}%`)
-      logger.debug(`${message.product_id}: BB Upper (${ind.bb.upper.toFixed(2)}): ${percentChange(ind.bb.upper, candle.close).toFixed(2)}%`)
-      logger.debug(`${message.product_id}: BB Lower (${ind.bb.lower.toFixed(2)}): ${percentChange(ind.bb.lower, candle.close).toFixed(2)}%`)
+
+      if (ind.rsi.isGreaterThan(70)) {
+        logger.debug(`${message.product_id}: Possibly being overbought: RSI${period} is ${ind.rsi.toFixed(2)}`)
+      } else if (ind.rsi.isLessThan(30)) {
+        logger.debug(`${message.product_id}: Possibly being oversold: RSI${period} is ${ind.rsi.toFixed(2)}`)
+      }
+
+      if (bbUpper.isGreaterThan(-.1)) {
+        logger.debug(`${message.product_id}: Price ${bbUpper.isPositive() ? 'above' : 'near'} BB upper (${ind.bb.upper.toFixed(2)}): ${bbUpper.toFixed(2)}%`)
+      } else if (bbLower.isLessThan(.1)) {
+        logger.debug(`${message.product_id}: Price ${bbLower.isNegative() ? 'below' : 'near'} BB lower (${ind.bb.lower.toFixed(2)}): ${bbLower.toFixed(2)}%`)
+      }
 
       // Buying logic:
       // Both granularities' and periods' percent change is negative
