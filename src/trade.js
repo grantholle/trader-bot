@@ -47,6 +47,8 @@ const buy = async (product, price, balance, productData) => {
 
     return params
   }
+
+  logger.info(`Insufficient USD account balance ($${dollars.toFixed(2)}) to make a coin purchase`)
 }
 
 const sell = async (product, price, balance, productData) => {
