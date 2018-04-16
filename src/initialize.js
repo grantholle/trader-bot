@@ -26,6 +26,10 @@ module.exports = () => {
         priceTracker[product][granularity] = {}
         const tracker = priceTracker[product][granularity]
 
+        // Set some defaults for a trend
+        tracker.consecutiveUpCandles = 0
+        tracker.consecutiveDownCandles = 0
+
         logger.verbose(`${product}: Getting historical data at every ${granularity / 60} minutes`)
 
         try {
@@ -86,6 +90,22 @@ module.exports = () => {
 
             // Recalculate the EMA
             tracker.indicators = await getIndicators(product, granularity, tracker.allCandles.map(c => c.close.toNumber()))
+
+            // Check if the candles are up from the previous one
+            tracker.trendingUp = c.close.isGreaterThanOrEqualTo(tracker.allCandles[tracker.allCandles.length - 2].close)
+            tracker.trendingDown = !tracker.trendingUp
+
+            if (tracker.trendingUp) {
+              tracker.consecutiveUpCandles++
+            } else if (tracker.consecutiveUpCandles > 0 && tracker.trendingDown) {
+              tracker.consecutiveUpCandles--
+            }
+
+            if (tracker.trendingDown) {
+              tracker.consecutiveDownCandles++
+            } else if (tracker.consecutiveDownCandles > 0 && tracker.trendingUp) {
+              tracker.consecutiveDownCandles--
+            }
 
             // Do some analysis on the last candle...
           }, granularity * 1000) // Granularity is in seconds
