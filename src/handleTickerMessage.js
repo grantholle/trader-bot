@@ -46,6 +46,9 @@ module.exports = (message, priceTracker) => {
   let smallerPeriodIsLower = true
   let smallerPeriodIsHigher = true
 
+  let buyTriggers = 0
+  let sellTriggers = 0
+
   // Set the current candle price data for each granularity
   for (const granularity of granularities) {
     const candle = productData[granularity].currentCandle
@@ -74,9 +77,11 @@ module.exports = (message, priceTracker) => {
       if (ind.rsi.isGreaterThan(70)) {
         logger.debug(`${message.product_id}: Possibly being overbought: ${granularity / 60}min RSI${period} is ${ind.rsi.toFixed(2)}, indicating a possible sell`)
         rsiLow = false
+        sellTriggers++
       } else if (ind.rsi.isLessThan(30)) {
         logger.debug(`${message.product_id}: Possibly being oversold: ${granularity / 60}min RSI${period} is ${ind.rsi.toFixed(2)}, indicating possible buy`)
         rsiHigh = false
+        buyTriggers++
       } else {
         rsiHigh = false
         rsiLow = false
@@ -85,9 +90,11 @@ module.exports = (message, priceTracker) => {
       if (bbUpper.isGreaterThan(-.1)) {
         logger.debug(`${message.product_id}: Price ${bbUpper.isPositive() ? 'above' : 'near'} the upper ${granularity / 60}min BB${period} band (${ind.bb.upper.toFixed(2)}) by ${bbUpper.toFixed(2)}%, indicating a possible sell`)
         bbLow = false
+        sellTriggers++
       } else if (bbLower.isLessThan(.1)) {
         logger.debug(`${message.product_id}: Price ${bbLower.isNegative() ? 'below' : 'near'} the lower ${granularity / 60}min BB${period} band (${ind.bb.lower.toFixed(2)}) by ${bbLower.toFixed(2)}%, indicating possible buy`)
         bbHigh = false
+        buyTriggers++
       } else {
         bbHigh = false
         bbLow = false
@@ -97,27 +104,31 @@ module.exports = (message, priceTracker) => {
       // Both granularities' and periods' percent change is negative
       if (percent.isPositive()) {
         priceIsBelowEma = false
+        buyTriggers++
       } else {
         priceIsAboveEma = false
+        sellTriggers++
       }
 
       // Both granularities' and periods' EMA12 is below the EMA26 (seemingly starting to trend down)
       if (!productData[granularity].indicators.smallerEmaBelowLarger) {
         smallerPeriodIsLower = false
+        buyTriggers++
       }
 
       if (!productData[granularity].indicators.largerEmaBelowSmaller) {
         smallerPeriodIsHigher = false
+        sellTriggers++
       }
     }
   }
 
   if (rsiHigh && bbHigh) {
-    logger.debug(`${message.product_id}: All RSI's and BB's are trending up indicating a possible sell`)
+    logger.debug(`${message.product_id}: All RSI's and BB's are trending up indicating a solid sell opportunity for $${message.price.plus(.01)}`)
   }
 
   if (rsiLow && bbLow) {
-    logger.debug(`${message.product_id}: All RSI's and BB's are trending down indicating a possible buy`)
+    logger.debug(`${message.product_id}: All RSI's and BB's are trending down indicating a solid buy opportunity for $${message.price.minus(.01)}`)
   }
 
   lastTickerPrice = clone(message.price)
@@ -151,6 +162,14 @@ module.exports = (message, priceTracker) => {
    * This is a riskier strategy, though. We could prematurely buy and the price drop even lower.
    * Just thinking...
    */
+
+   if (buyTriggers >= 6) {
+     logger.debug(`${message.product_id}: Buy triggers reached: ${buyTriggers}`)
+     return submitTrade('buy', message.product_id, message.price)
+    } else if (sellTriggers >= 6) {
+      logger.debug(`${message.product_id}: Sell triggers reached: ${sellTriggers}`)
+      return submitTrade('sell', message.product_id, message.price)
+   }
 
   // Holds the 2 emas of the smaller granularity
   const [emaOne, emaTwo] = periods.map(p => new BigNumber(last(productData[smallerGranularity].indicators[p].ema)))
