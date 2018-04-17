@@ -39,6 +39,10 @@ module.exports = (message, priceTracker) => {
 
   let priceIsBelowEma = true
   let priceIsAboveEma = true
+  let rsiHigh = true
+  let rsiLow = true
+  let bbHigh = true
+  let bbLow = true
   let smallerPeriodIsLower = true
   let smallerPeriodIsHigher = true
 
@@ -69,14 +73,24 @@ module.exports = (message, priceTracker) => {
 
       if (ind.rsi.isGreaterThan(70)) {
         logger.debug(`${message.product_id}: Possibly being overbought: ${granularity / 60}min RSI${period} is ${ind.rsi.toFixed(2)}, indicating a possible sell`)
+        rsiLow = false
       } else if (ind.rsi.isLessThan(30)) {
         logger.debug(`${message.product_id}: Possibly being oversold: ${granularity / 60}min RSI${period} is ${ind.rsi.toFixed(2)}, indicating possible buy`)
+        rsiHigh = false
+      } else {
+        rsiHigh = false
+        rsiLow = false
       }
 
       if (bbUpper.isGreaterThan(-.1)) {
         logger.debug(`${message.product_id}: Price ${bbUpper.isPositive() ? 'above' : 'near'} the upper ${granularity / 60}min BB${period} band (${ind.bb.upper.toFixed(2)}) by ${bbUpper.toFixed(2)}%, indicating a possible sell`)
+        bbLow = false
       } else if (bbLower.isLessThan(.1)) {
         logger.debug(`${message.product_id}: Price ${bbLower.isNegative() ? 'below' : 'near'} the lower ${granularity / 60}min BB${period} band (${ind.bb.lower.toFixed(2)}) by ${bbLower.toFixed(2)}%, indicating possible buy`)
+        bbHigh = false
+      } else {
+        bbHigh = false
+        bbLow = false
       }
 
       // Buying logic:
@@ -96,6 +110,14 @@ module.exports = (message, priceTracker) => {
         smallerPeriodIsHigher = false
       }
     }
+  }
+
+  if (rsiHigh && bbHigh) {
+    logger.debug(`${message.product_id}: All RSI's and BB's are trending up indicating a possible sell`)
+  }
+
+  if (rsiLow && bbLow) {
+    logger.debug(`${message.product_id}: All RSI's and BB's are trending down indicating a possible buy`)
   }
 
   lastTickerPrice = clone(message.price)
