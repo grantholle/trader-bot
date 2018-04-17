@@ -163,13 +163,13 @@ module.exports = (message, priceTracker) => {
    * Just thinking...
    */
 
-   if (buyTriggers >= 6) {
-     logger.debug(`${message.product_id}: Buy triggers reached: ${buyTriggers}`)
-     return submitTrade('buy', message.product_id, message.price)
-    } else if (sellTriggers >= 6) {
-      logger.debug(`${message.product_id}: Sell triggers reached: ${sellTriggers}`)
-      return submitTrade('sell', message.product_id, message.price)
-   }
+  if (buyTriggers >= 6 && priceIsBelowEma) {
+    logger.debug(`${message.product_id}: Buy triggers reached: ${buyTriggers}`)
+    return submitTrade('buy', message.product_id, message.price)
+  } else if (sellTriggers >= 6 && priceIsAboveEma) {
+    logger.debug(`${message.product_id}: Sell triggers reached: ${sellTriggers}`)
+    return submitTrade('sell', message.product_id, message.price)
+  }
 
   // Holds the 2 emas of the smaller granularity
   const [emaOne, emaTwo] = periods.map(p => new BigNumber(last(productData[smallerGranularity].indicators[p].ema)))
