@@ -7,6 +7,7 @@ const logger = require('./logger')
 const gdaxProducts = require('./products')
 const { liveTrade } = require('./config')
 const pusher = require('./pushbullet')
+const cancelOpenOrders = require('./orders')
 
 let canSell = true
 let canBuy = true
@@ -15,10 +16,6 @@ let canBuy = true
 // We have to check account available balances
 const buy = async (product, price, balance, productData) => {
   price = price.minus(productData.quote_increment)
-
-  // Check if there's a pending order from a time that didn't get fulfilled
-  // If there is, cancel it? Or don't process the new buy?
-  // I say cancel an existing unfulfilled order and place the new one
 
   const dollars = new BigNumber(balance.USD.available)
 
@@ -138,6 +135,14 @@ module.exports = async (side, product, price) => {
   } catch (err) {
     logger.error(`Failed fetching account information or gdax product information`, err)
     return
+  }
+
+  try {
+    // Cancel open orders for this side and product
+    // If it fails, that's ok, attempt to trade anyway
+    await cancelOpenOrders(side, product)
+  } catch (err) {
+    logger.error(`${product}: Failed cancelling ${side} orders`)
   }
 
   try {
