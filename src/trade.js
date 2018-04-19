@@ -8,6 +8,9 @@ const gdaxProducts = require('./products')
 const { liveTrade } = require('./config')
 const pusher = require('./pushbullet')
 
+let canSell = true
+let canBuy = true
+
 // Buying requires a little bit of preparation
 // We have to check account available balances
 const buy = async (product, price, balance, productData) => {
@@ -22,15 +25,23 @@ const buy = async (product, price, balance, productData) => {
   // If we can, calculate the total coins we can buy based on the available USD
   // available USD divided by message.price = number of coins we want to buy
   // To spread the risk, only do about a fourth of total coins we could buy
-  const coinsToBuy = dollars.dividedBy(price).multipliedBy(.25)
+  const totalCoinPurchase = dollars.dividedBy(price)
+  let coinsToBuy = totalCoinPurchase.multipliedBy(.25)
 
   // This will never happen...
   if (coinsToBuy.isGreaterThan(productData.base_max_size)) {
     coinsToBuy = new BigNumber(productData.base_max_size)
   }
 
+  // If our less-risky buy isn't enough, buy all possible amounts
+  if (coinsToBuy.isLessThan(productData.base_min_size)) {
+    coinsToBuy = totalCoinPurchase
+  }
+
   // Check to make sure it's above the min and below the max allowed trade quantities
   if (coinsToBuy.isGreaterThanOrEqualTo(productData.base_min_size)) {
+    canSell = true
+
     // Execute the trade
     // Probably poll to make sure the order wasn't rejected somehow
     // Round down at 8 decimal places
@@ -50,20 +61,26 @@ const buy = async (product, price, balance, productData) => {
   }
 
   logger.info(`Insufficient USD account balance ($${dollars.toFixed(2)}) to make a coin purchase @ $${price.toFixed(2)}`)
+  canBuy = false
 }
 
 const sell = async (product, price, balance, productData) => {
   price = price.plus(productData.quote_increment)
 
   const currency = product.split('-')[0]
-  let coinsToSell = new BigNumber(balance[currency].available)
+  const totalCoinsAvailable = new BigNumber(balance[currency].available)
 
   // Offset risk by selling a portion of what we have
-  coinsToSell = coinsToSell.multipliedBy(.25)
+  let coinsToSell = totalCoinsAvailable.multipliedBy(.25)
 
   // This will probably never happen...
   if (coinsToSell.isGreaterThan(productData.base_max_size)) {
     coinsToSell = new BigNumber(productData.base_max_size)
+  }
+
+  // If our less-risky sell amount isn't enough, sell everything available
+  if (coinsToSell.isLessThan(productData.base_min_size)) {
+    coinsToSell = totalCoinsAvailable
   }
 
   // Check to make sure it's above the min and below the max allowed trade quantities
@@ -77,6 +94,8 @@ const sell = async (product, price, balance, productData) => {
       product_id: product
     }
 
+    canBuy = true
+
     // If we're live trading, submit the trade
     // Otherwise just send the dummy data back
     if (liveTrade) {
@@ -87,6 +106,7 @@ const sell = async (product, price, balance, productData) => {
   }
 
   logger.info(`Insufficient ${currency} account balance (${coinsToSell.toFixed(8)}) to sell coins @ $${price.toFixed(2)}`)
+  canSell = false
 }
 
 const tradeActions = { buy, sell }
@@ -104,6 +124,12 @@ module.exports = async (side, product, price) => {
   let res = false
   let balance
   let productData
+
+  // Using flags when we've made purchases/buys to cut down on api usage
+  if ((side === 'buy' && !canBuy) || (side === 'sell' && !canSell)) {
+    logger.debug(`${product}: Not in position to ${side}. Potential ${side} @ $${price.toFixed(2)}`)
+    return
+  }
 
   try {
     // Check account balances and product information to make trade
