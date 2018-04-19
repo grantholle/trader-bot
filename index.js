@@ -8,6 +8,7 @@ const init = require('./src/initialize')
 const tickerHandler = require('./src/handleTickerMessage')
 const logger = require('./src/logger')
 const { products, granularities } = require('./src/config')
+const heartbeatReconnectDelay = 15000
 
 const debug = obj => {
   console.log(require('util').inspect(obj, {
@@ -20,9 +21,12 @@ const debug = obj => {
 // Stores all candles, EMA data, and current-period candle data
 // This is the "data"
 let priceTracker = {}
+let heartbeatTimeout
 
 gdaxWebsocket.on('open', () => {
   logger.info(`Connected to ${gdaxWebsocket.websocketURI}`)
+
+  heartbeatTimeout = setTimeout(gdaxWebsocket.connect, heartbeatReconnectDelay)
 
   // Fetch the price history and calculate the
   // current EMA for each granularity and period
@@ -31,6 +35,12 @@ gdaxWebsocket.on('open', () => {
 
     // Only attach the listener after we've been initialized
     gdaxWebsocket.on('message', message => {
+      // Listen for hearbeats, reconnect if we lose the heartbeat after 15 seconds
+      if (message.type === 'heartbeat') {
+        clearTimeout(heartbeatTimeout)
+        heartbeatTimeout = setTimeout(gdaxWebsocket.connect, heartbeatReconnectDelay)
+      }
+
       tickerHandler(message, priceTracker)
     })
   }).catch(logger.error)
