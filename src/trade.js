@@ -56,7 +56,10 @@ const sell = async (product, price, balance, productData) => {
   price = price.plus(productData.quote_increment)
 
   const currency = product.split('-')[0]
-  const coinsToSell = new BigNumber(balance[currency].available)
+  let coinsToSell = new BigNumber(balance[currency].available)
+
+  // Offset risk by selling a portion of what we have
+  coinsToSell = coinsToSell.multipliedBy(.25)
 
   // This will probably never happen...
   if (coinsToSell.isGreaterThan(productData.base_max_size)) {
