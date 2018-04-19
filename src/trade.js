@@ -83,7 +83,7 @@ const sell = async (product, price, balance, productData) => {
     return params
   }
 
-  logger.info(`Insufficient ${currency} account balance (${coinsToSell.toFixed(8)}) to make a coin purchase @ $${price.toFixed(2)}`)
+  logger.info(`Insufficient ${currency} account balance (${coinsToSell.toFixed(8)}) to sell coins @ $${price.toFixed(2)}`)
 }
 
 const tradeActions = { buy, sell }
