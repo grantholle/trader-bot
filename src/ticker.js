@@ -6,6 +6,8 @@ const BigNumber = require('bignumber.js')
 const { clone } = require('lodash')
 const traderLogic = require('./logic')
 
+let lastTickerPrice
+
 module.exports = (message, priceTracker) => {
   // If this isn't a ticker message or is and doesn't have a trade id
   if (message.type !== 'ticker' || (message.type === 'ticker' && !message.trade_id)) {
@@ -20,6 +22,8 @@ module.exports = (message, priceTracker) => {
   if (lastTickerPrice && message.price.isEqualTo(lastTickerPrice)) {
     return
   }
+
+  const productData = priceTracker[message.product_id]
 
   // Set the current candle price data for each granularity
   for (const granularity of granularities) {
@@ -40,5 +44,5 @@ module.exports = (message, priceTracker) => {
   lastTickerPrice = clone(message.price)
 
   // The module that handles the logic to make trades
-  traderLogic(message, productData)
+  traderLogic(message, priceTracker)
 }
