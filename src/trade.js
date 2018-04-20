@@ -5,12 +5,18 @@ const BigNumber = require('bignumber.js')
 const getAccounts = require('./accounts')
 const logger = require('./logger')
 const gdaxProducts = require('./products')
-const { liveTrade } = require('./config')
+const { liveTrade, products } = require('./config')
 const pusher = require('./pushbullet')
 const cancelOpenOrders = require('./orders')
+const positions = products.reduce((obj, product) => {
+  obj[product] = {
+    canSell: true,
+    canBuy: true
+  }
 
-let canSell = true
-let canBuy = true
+  return obj
+}, {})
+
 
 // Buying requires a little bit of preparation
 // We have to check account available balances
@@ -37,7 +43,7 @@ const buy = async (product, price, balance, productData) => {
 
   // Check to make sure it's above the min and below the max allowed trade quantities
   if (coinsToBuy.isGreaterThanOrEqualTo(productData.base_min_size)) {
-    canSell = true
+    positions[product].canSell = true
 
     // Execute the trade
     // Probably poll to make sure the order wasn't rejected somehow
@@ -58,7 +64,7 @@ const buy = async (product, price, balance, productData) => {
   }
 
   logger.info(`Insufficient USD account balance ($${dollars.toFixed(2)}) to make a coin purchase @ $${price.toFixed(2)}`)
-  canBuy = false
+  positions[product].canBuy = false
 }
 
 const sell = async (product, price, balance, productData) => {
@@ -91,7 +97,7 @@ const sell = async (product, price, balance, productData) => {
       product_id: product
     }
 
-    canBuy = true
+    positions[product].canBuy = true
 
     // If we're live trading, submit the trade
     // Otherwise just send the dummy data back
@@ -103,7 +109,7 @@ const sell = async (product, price, balance, productData) => {
   }
 
   logger.info(`Insufficient ${currency} account balance (${coinsToSell.toFixed(8)}) to sell coins @ $${price.toFixed(2)}`)
-  canSell = false
+  positions[product].canSell = false
 }
 
 const tradeActions = { buy, sell }
@@ -123,7 +129,7 @@ module.exports = async (side, product, price) => {
   let productData
 
   // Using flags when we've made purchases/buys to cut down on api usage
-  if ((side === 'buy' && !canBuy) || (side === 'sell' && !canSell)) {
+  if ((side === 'buy' && !positions[product].canBuy) || (side === 'sell' && !positions[product].canSell)) {
     logger.debug(`${product}: Not in position to ${side}. Potential ${side} @ $${price.toFixed(2)}`)
     return
   }
