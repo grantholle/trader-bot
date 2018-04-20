@@ -72,7 +72,7 @@ module.exports = (message, priceTracker) => {
       const bbUpper = percentChange(ind.bb.upper, candle.close)
       const bbLower = percentChange(ind.bb.lower, candle.close)
 
-      logger.debug(`${message.product_id}: ${granularity / 60}min EMA${period} (${lastEma.toFixed(2)}) difference: ${percent.toFixed(2)}%`)
+      logger.silly(`${message.product_id}: ${granularity / 60}min EMA${period} (${lastEma.toFixed(2)}) difference: ${percent.toFixed(2)}%`)
 
       if (ind.rsi.isGreaterThan(70)) {
         logger.debug(`${message.product_id}: Possibly being overbought: ${granularity / 60}min RSI${period} is ${ind.rsi.toFixed(2)}, indicating a possible sell`)
@@ -164,10 +164,10 @@ module.exports = (message, priceTracker) => {
    */
 
   if (buyTriggers >= 6 && priceIsBelowEma) {
-    logger.debug(`${message.product_id}: Buy triggers reached: ${buyTriggers}`)
+    logger.debug(`${message.product_id}: Buy triggers reached`)
     return submitTrade('buy', message.product_id, message.price)
   } else if (sellTriggers >= 6 && priceIsAboveEma) {
-    logger.debug(`${message.product_id}: Sell triggers reached: ${sellTriggers}`)
+    logger.debug(`${message.product_id}: Sell triggers reached`)
     return submitTrade('sell', message.product_id, message.price)
   }
 
