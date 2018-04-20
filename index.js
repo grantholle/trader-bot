@@ -5,7 +5,7 @@ require('dotenv').config()
 
 const gdaxWebsocket = require('./src/gdaxWebsocketClient')
 const init = require('./src/initialize')
-const tickerHandler = require('./src/handleTickerMessage')
+const tickerHandler = require('./src/ticker')
 const logger = require('./src/logger')
 const { products, granularities } = require('./src/config')
 const heartbeatReconnectDelay = 15000
