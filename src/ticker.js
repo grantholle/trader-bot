@@ -16,7 +16,7 @@ module.exports = (message, priceTracker) => {
 
   message.price = new BigNumber(message.price)
 
-  logger.silly(`${message.product_id}: Trade: ${message.side} @ $${message.price.toFixed(2)} (${message.last_size})`)
+  logger.verbose(`${message.product_id}: Trade: ${message.side} @ $${message.price.toFixed(2)} (${message.last_size})`)
 
   // If it was the same price as last time, don't continue
   if (lastTickerPrice && message.price.isEqualTo(lastTickerPrice)) {

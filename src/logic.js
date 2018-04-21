@@ -42,14 +42,14 @@ module.exports = (message, priceTracker) => {
       const bbUpper = percentChange(ind.bb.upper, message.price)
       const bbLower = percentChange(ind.bb.lower, message.price)
 
-      logger.debug(`${message.product_id}: ${granularity / 60}min EMA${period} (${lastEma.toFixed(2)}) difference: ${percent.toFixed(2)}%`)
+      logger.silly(`${message.product_id}: ${granularity / 60}min EMA${period} (${lastEma.toFixed(2)}) difference: ${percent.toFixed(2)}%`)
 
       if (ind.rsi.isGreaterThan(70)) {
-        logger.debug(`${message.product_id}: Possibly being overbought: ${granularity / 60}min RSI${period} is ${ind.rsi.toFixed(2)}, indicating a possible sell`)
+        logger.silly(`${message.product_id}: Possibly being overbought: ${granularity / 60}min RSI${period} is ${ind.rsi.toFixed(2)}, indicating a possible sell`)
         rsiLow = false
         sellTriggers++
       } else if (ind.rsi.isLessThan(30)) {
-        logger.debug(`${message.product_id}: Possibly being oversold: ${granularity / 60}min RSI${period} is ${ind.rsi.toFixed(2)}, indicating possible buy`)
+        logger.silly(`${message.product_id}: Possibly being oversold: ${granularity / 60}min RSI${period} is ${ind.rsi.toFixed(2)}, indicating possible buy`)
         rsiHigh = false
         buyTriggers++
       } else {
@@ -57,12 +57,12 @@ module.exports = (message, priceTracker) => {
         rsiLow = false
       }
 
-      if (bbUpper.isGreaterThan(-.1)) {
-        logger.debug(`${message.product_id}: Price ${bbUpper.isPositive() ? 'above' : 'near'} the upper ${granularity / 60}min BB${period} band (${ind.bb.upper.toFixed(2)}) by ${bbUpper.toFixed(2)}%, indicating a possible sell`)
+      if (bbUpper.isGreaterThan(-0.1)) {
+        logger.silly(`${message.product_id}: Price ${bbUpper.isPositive() ? 'above' : 'near'} the upper ${granularity / 60}min BB${period} band (${ind.bb.upper.toFixed(2)}) by ${bbUpper.toFixed(2)}%, indicating a possible sell`)
         bbLow = false
         sellTriggers++
-      } else if (bbLower.isLessThan(.1)) {
-        logger.debug(`${message.product_id}: Price ${bbLower.isNegative() ? 'below' : 'near'} the lower ${granularity / 60}min BB${period} band (${ind.bb.lower.toFixed(2)}) by ${bbLower.toFixed(2)}%, indicating possible buy`)
+      } else if (bbLower.isLessThan(0.1)) {
+        logger.silly(`${message.product_id}: Price ${bbLower.isNegative() ? 'below' : 'near'} the lower ${granularity / 60}min BB${period} band (${ind.bb.lower.toFixed(2)}) by ${bbLower.toFixed(2)}%, indicating possible buy`)
         bbHigh = false
         buyTriggers++
       } else {
@@ -94,11 +94,11 @@ module.exports = (message, priceTracker) => {
   }
 
   if (rsiHigh && bbHigh) {
-    logger.debug(`${message.product_id}: All RSI's and BB's are trending up indicating a solid sell opportunity for $${message.price.plus(.01)}`)
+    logger.silly(`${message.product_id}: All RSI's and BB's are trending up indicating a solid sell opportunity for $${message.price.plus(0.01)}`)
   }
 
   if (rsiLow && bbLow) {
-    logger.debug(`${message.product_id}: All RSI's and BB's are trending down indicating a solid buy opportunity for $${message.price.minus(.01)}`)
+    logger.silly(`${message.product_id}: All RSI's and BB's are trending down indicating a solid buy opportunity for $${message.price.minus(0.01)}`)
   }
 
   /**
@@ -153,8 +153,8 @@ module.exports = (message, priceTracker) => {
 
   // It has done this for at least 2? ticker cycles
   if (numberOfTicksBelowEma >= MINIMUM_LOW_PRICE_TREND_UNTIL_TRADE) {
-    logger.debug(`${message.product_id}: Number of ticks where the trade price has been below all EMAs: ${numberOfTicksBelowEma}`)
-    logger.debug(`${message.product_id}: Smaller granularity EMA percent difference: ${smallerGranularityEmaPeriodsChange}`)
+    logger.silly(`${message.product_id}: Number of ticks where the trade price has been below all EMAs: ${numberOfTicksBelowEma}`)
+    logger.silly(`${message.product_id}: Smaller granularity EMA percent difference: ${smallerGranularityEmaPeriodsChange}`)
 
     // When both the smaller granularity EMAs are within -.01% of each other (meaning they are about to cross or have already)
     // and have a very large negative or positive percent difference between the current trade price
@@ -189,8 +189,8 @@ module.exports = (message, priceTracker) => {
 
   // It has done this for at least 2? ticker cycles
   if (numberOfTicksBelowEma >= MINIMUM_HIGH_PRICE_TREND_UNTIL_TRADE) {
-    logger.debug(`${message.product_id}: Number of ticks where the trade price has been above all EMAs: ${numberOfTicksAboveEma}`)
-    logger.debug(`${message.product_id}: Smaller granularity EMA percent difference: ${smallerGranularityEmaPeriodsChange}`)
+    logger.silly(`${message.product_id}: Number of ticks where the trade price has been above all EMAs: ${numberOfTicksAboveEma}`)
+    logger.silly(`${message.product_id}: Smaller granularity EMA percent difference: ${smallerGranularityEmaPeriodsChange}`)
 
     // When both the smaller granularity EMAs are within .01% of each other (meaning they are about to cross or have already)
     // and have a very large negative or positive percent difference between the current trade price

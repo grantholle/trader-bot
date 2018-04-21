@@ -17,7 +17,6 @@ const positions = products.reduce((obj, product) => {
   return obj
 }, {})
 
-
 // Buying requires a little bit of preparation
 // We have to check account available balances
 const buy = async (product, price, balance, productData) => {
@@ -29,7 +28,7 @@ const buy = async (product, price, balance, productData) => {
   // available USD divided by message.price = number of coins we want to buy
   // To spread the risk, only do about a fourth of total coins we could buy
   const totalCoinPurchase = dollars.dividedBy(price)
-  let coinsToBuy = totalCoinPurchase.multipliedBy(.25)
+  let coinsToBuy = totalCoinPurchase.multipliedBy(0.25)
 
   // This will never happen...
   if (coinsToBuy.isGreaterThan(productData.base_max_size)) {
@@ -74,7 +73,7 @@ const sell = async (product, price, balance, productData) => {
   const totalCoinsAvailable = new BigNumber(balance[currency].available)
 
   // Offset risk by selling a portion of what we have
-  let coinsToSell = totalCoinsAvailable.multipliedBy(.25)
+  let coinsToSell = totalCoinsAvailable.multipliedBy(0.25)
 
   // This will probably never happen...
   if (coinsToSell.isGreaterThan(productData.base_max_size)) {

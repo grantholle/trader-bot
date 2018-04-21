@@ -21,15 +21,15 @@ exports.getIndicators = async (product, granularity, values) => {
     // Calculate the period's EMA
     const avg = ema({ period, values })
     indicators[period].ema = avg.map(i => new BigNumber(i.toString()))
-    logger.verbose(`${product}: EMA${period} for last ${granularity / 60}min candle: ${last(indicators[period].ema).toFixed(2)}`)
+    logger.debug(`${product}: EMA${period} for last ${granularity / 60}min candle: ${last(indicators[period].ema).toFixed(2)}`)
 
     // RSI
     indicators[period].rsi = new BigNumber(last(rsi({ period, values })))
-    logger.verbose(`${product}: RSI${period} for last ${granularity / 60}min candle: ${indicators[period].rsi.toFixed(2)}`)
+    logger.debug(`${product}: RSI${period} for last ${granularity / 60}min candle: ${indicators[period].rsi.toFixed(2)}`)
 
     // BB
     indicators[period].bb = last(bollingerbands({ period, values, stdDev: 2 }))
-    logger.verbose(`${product}: BB${period} for last ${granularity / 60}min candle: lower: ${indicators[period].bb.lower.toFixed(2)}, middle: ${indicators[period].bb.middle.toFixed(2)}, high: ${indicators[period].bb.upper.toFixed(2)}`)
+    logger.debug(`${product}: BB${period} for last ${granularity / 60}min candle: lower: ${indicators[period].bb.lower.toFixed(2)}, middle: ${indicators[period].bb.middle.toFixed(2)}, high: ${indicators[period].bb.upper.toFixed(2)}`)
   }
 
   indicators.smallerEmaBelowLarger = last(indicators[smallerPeriod].ema).isLessThan(last(indicators[largerPeriod].ema))
