@@ -1,10 +1,10 @@
 'use strict'
 
 const logger = require('./logger')
-const { products, periods } = require('./config')
+const { periods } = require('./config')
 const BigNumber = require('bignumber.js')
 const { ema, rsi, bollingerbands } = require('technicalindicators')
-const { last, takeRight } = require('lodash')
+const { last } = require('lodash')
 const largerPeriod = Math.max(...periods)
 const smallerPeriod = Math.min(...periods)
 

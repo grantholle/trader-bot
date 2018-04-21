@@ -7,9 +7,9 @@ const { last } = require('lodash')
 const { percentChange } = require('./utilities')
 const submitTrade = require('./trade')
 
-const largerPeriod = Math.max(...periods)
-const largerGranularity = Math.max(...granularities)
-const smallerPeriod = Math.min(...periods)
+// const largerPeriod = Math.max(...periods)
+// const largerGranularity = Math.max(...granularities)
+// const smallerPeriod = Math.min(...periods)
 const smallerGranularity = Math.min(...granularities)
 
 let numberOfTicksBelowEma = 0
@@ -135,7 +135,7 @@ module.exports = (message, priceTracker) => {
   const [emaOne, emaTwo] = periods.map(p => new BigNumber(last(productData[smallerGranularity].indicators[p].ema)))
   const smallerGranularityEmaPeriodsChange = percentChange(emaTwo, emaOne)
   const currentPriceChangeFromSmallerEma = percentChange(emaOne, message.price)
-  const largestEma = new BigNumber(last(productData[largerGranularity].indicators[largerPeriod].ema))
+  // const largestEma = new BigNumber(last(productData[largerGranularity].indicators[largerPeriod].ema))
 
   // Buying Logic:
   // If the drop has been over 10% in the last 15 mins, don't think just buy some!

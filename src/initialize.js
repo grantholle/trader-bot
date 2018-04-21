@@ -2,13 +2,11 @@
 
 const client = require('./gdaxClient')
 const logger = require('./logger')
-const moment = require('moment')
-const { products, granularities, periods } = require('./config')
+const { products, granularities } = require('./config')
 const { clone } = require('lodash')
 const accountBalances = require('./accounts')
 const BigNumber = require('bignumber.js')
-const { getIndicators, highLowSpread, candleChange, percentChange } = require('./utilities')
-const { predictPattern } = require('technicalindicators')
+const { getIndicators, highLowSpread, percentChange } = require('./utilities')
 
 module.exports = () => {
   const priceTracker = {}

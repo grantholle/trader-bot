@@ -10,14 +10,6 @@ const logger = require('./src/logger')
 const { products, granularities } = require('./src/config')
 const heartbeatReconnectDelay = 15000
 
-const debug = obj => {
-  console.log(require('util').inspect(obj, {
-    showHidden: true,
-    depth: null,
-    colors: true
-  }))
-}
-
 // Stores all candles, EMA data, and current-period candle data
 // This is the "data"
 let priceTracker = {}
