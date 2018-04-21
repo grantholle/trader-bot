@@ -131,14 +131,6 @@ module.exports = (message, priceTracker) => {
    * Just thinking...
    */
 
-  // if (buyTriggers >= 6 && priceIsBelowEma) {
-  //   logger.debug(`${message.product_id}: Buy triggers reached`)
-  //   return submitTrade('buy', message.product_id, message.price)
-  // } else if (sellTriggers >= 6 && priceIsAboveEma) {
-  //   logger.debug(`${message.product_id}: Sell triggers reached`)
-  //   return submitTrade('sell', message.product_id, message.price)
-  // }
-
   // Holds the 2 emas of the smaller granularity
   const [emaOne, emaTwo] = periods.map(p => new BigNumber(last(productData[smallerGranularity].indicators[p].ema)))
   const smallerGranularityEmaPeriodsChange = percentChange(emaTwo, emaOne)
@@ -183,9 +175,9 @@ module.exports = (message, priceTracker) => {
 
   // Selling logic:
   // If the jump has been over 10% in the last 15 mins, don't think just sell!
-  if (percentChange(largestEma, message.price).isGreaterThan(10)) {
-    return submitTrade('sell', message.product_id, message.price)
-  }
+  // if (percentChange(largestEma, message.price).isGreaterThan(10)) {
+  //   return submitTrade('sell', message.product_id, message.price)
+  // }
 
   // Count the number of tick cycles where price is above and the smaller EMA is above the larger period's
   // else if the price has dropped a lot relatively, lower the count until it's back to zero
@@ -211,5 +203,16 @@ module.exports = (message, priceTracker) => {
       // reset down trending ticks back to zero
       numberOfTicksAboveEma = 0
     }
+
+    return
+  }
+
+  // Put this logic below the ema logic, as it is theoretically more reliable
+  if (buyTriggers >= 6 && priceIsBelowEma) {
+    logger.debug(`${message.product_id}: Buy triggers reached`)
+    return submitTrade('buy', message.product_id, message.price)
+  } else if (sellTriggers >= 6 && priceIsAboveEma) {
+    logger.debug(`${message.product_id}: Sell triggers reached`)
+    return submitTrade('sell', message.product_id, message.price)
   }
 }
