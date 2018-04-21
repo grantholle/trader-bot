@@ -1,11 +1,10 @@
 'use strict'
 
-const logger = require('./logger')
-const { periods, granularities } = require('./config')
+const logger = require('../logger')
+const { periods, granularities } = require('../config')
 const BigNumber = require('bignumber.js')
 const { last } = require('lodash')
-const { percentChange } = require('./utilities')
-const submitTrade = require('./trade')
+const { percentChange } = require('../utilities')
 
 // const largerPeriod = Math.max(...periods)
 // const largerGranularity = Math.max(...granularities)
@@ -160,17 +159,17 @@ module.exports = (message, priceTracker) => {
     // and have a very large negative or positive percent difference between the current trade price
     // if (smallerGranularityEmaPeriodsChange.isGreaterThanOrEqualTo(-0.01) && currentPriceChangeFromSmallerEma.isGreaterThanOrEqualTo(-0.001)) {
     if (smallerGranularityEmaPeriodsChange.isGreaterThanOrEqualTo(-0.05)) {
-      // Attempt to submit the trade
-      // We're wanting buying at one cent below the current trade price
-      submitTrade('buy', message.product_id, message.price)
-
       // reset down trending ticks back to zero
       numberOfTicksBelowEma = 0
+
+      // Attempt to submit the trade
+      // We're wanting buying at one cent below the current trade price
+      return 'buy'
     }
 
     // Just return here from the function since we're not
     // in a selling situation
-    return
+    return false
   }
 
   // Selling logic:
@@ -196,23 +195,23 @@ module.exports = (message, priceTracker) => {
     // and have a very large negative or positive percent difference between the current trade price
     // if (smallerGranularityEmaPeriodsChange.isLessThanOrEqualTo(0.01) && currentPriceChangeFromSmallerEma.isLessThanOrEqualTo(0.001)) {
     if (smallerGranularityEmaPeriodsChange.isLessThanOrEqualTo(0.05)) {
-      // Attempt to submit the trade
-      // Sell at one cent above the current trade price
-      submitTrade('sell', message.product_id, message.price)
-
       // reset down trending ticks back to zero
       numberOfTicksAboveEma = 0
+
+      // Attempt to submit the trade
+      // Sell at one cent above the current trade price
+      return 'sell'
     }
 
-    return
+    return false
   }
 
   // Put this logic below the ema logic, as it is theoretically more reliable
   if (buyTriggers >= 6 && priceIsBelowEma) {
     logger.debug(`${message.product_id}: Buy triggers reached`)
-    return submitTrade('buy', message.product_id, message.price)
+    return 'buy'
   } else if (sellTriggers >= 6 && priceIsAboveEma) {
     logger.debug(`${message.product_id}: Sell triggers reached`)
-    return submitTrade('sell', message.product_id, message.price)
+    return 'sell'
   }
 }
