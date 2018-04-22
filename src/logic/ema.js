@@ -40,7 +40,7 @@ module.exports = (message, priceTracker) => {
   const smallIndicators = productData[smallerGranularity].indicators
   const priceAboveSmallEma = percentChange(last(smallIndicators[smallerPeriod].ema), message.price).isPositive()
   const smallerGranularityEmaPeriodsChange = smallIndicators.emaPercentDifference
-  const positiveGain = smallIndicators[smallerPeriod].averageGain.isPositive()
+  const positiveGain = smallIndicators[smallerPeriod].averageGain.isGreaterThan(smallIndicators[smallerPeriod].averageLoss)
 
   // When both the smaller granularity EMAs are within -.01% of each other (meaning they are about to cross or have already)
   // and have a very large negative or positive percent difference between the current trade price
