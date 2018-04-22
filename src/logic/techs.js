@@ -14,7 +14,7 @@ const smallerGranularity = Math.min(...granularities)
 let numberOfTicksBelowEma = 0
 let numberOfTicksAboveEma = 0
 
-const MINIMUM_LOW_PRICE_TREND_UNTIL_TRADE = 2
+const MINIMUM_LOW_PRICE_TREND_UNTIL_TRADE = 3
 const MINIMUM_HIGH_PRICE_TREND_UNTIL_TRADE = 3
 
 module.exports = (message, priceTracker) => {
@@ -136,12 +136,6 @@ module.exports = (message, priceTracker) => {
   const currentPriceChangeFromSmallerEma = percentChange(emaOne, message.price)
   // const largestEma = new BigNumber(last(productData[largerGranularity].indicators[largerPeriod].ema))
 
-  // Buying Logic:
-  // If the drop has been over 10% in the last 15 mins, don't think just buy some!
-  // if (percentChange(largestEma, message.price).isLessThan(-10)) {
-  //   return submitTrade('buy', message.product_id, message.price)
-  // }
-
   // Count the number of tick cycles where price is below and the smaller is lower
   // else if the price has jumped relatively a lot, lower the count until it's back to zero
   if (priceIsBelowEma && smallerPeriodIsLower) {
@@ -150,9 +144,9 @@ module.exports = (message, priceTracker) => {
     numberOfTicksBelowEma--
   }
 
-  // It has done this for at least 2? ticker cycles
-  if (numberOfTicksBelowEma >= MINIMUM_LOW_PRICE_TREND_UNTIL_TRADE) {
-    logger.silly(`${message.product_id}: Number of ticks where the trade price has been below all EMAs: ${numberOfTicksBelowEma}`)
+  // It has done this for at least 2? candles
+  if (productData[smallerGranularity].consecutiveDownCandles >= MINIMUM_LOW_PRICE_TREND_UNTIL_TRADE) {
+    logger.silly(`${message.product_id}: Number of candles where the trade price has been below all EMAs: ${productData[smallerGranularity].consecutiveDownCandles}`)
     logger.silly(`${message.product_id}: Smaller granularity EMA percent difference: ${smallerGranularityEmaPeriodsChange}`)
 
     // When both the smaller granularity EMAs are within -.01% of each other (meaning they are about to cross or have already)
@@ -172,12 +166,6 @@ module.exports = (message, priceTracker) => {
     return false
   }
 
-  // Selling logic:
-  // If the jump has been over 10% in the last 15 mins, don't think just sell!
-  // if (percentChange(largestEma, message.price).isGreaterThan(10)) {
-  //   return submitTrade('sell', message.product_id, message.price)
-  // }
-
   // Count the number of tick cycles where price is above and the smaller EMA is above the larger period's
   // else if the price has dropped a lot relatively, lower the count until it's back to zero
   if (priceIsAboveEma && smallerPeriodIsHigher) {
@@ -187,8 +175,8 @@ module.exports = (message, priceTracker) => {
   }
 
   // It has done this for at least 2? ticker cycles
-  if (numberOfTicksBelowEma >= MINIMUM_HIGH_PRICE_TREND_UNTIL_TRADE) {
-    logger.silly(`${message.product_id}: Number of ticks where the trade price has been above all EMAs: ${numberOfTicksAboveEma}`)
+  if (productData[smallerGranularity].consecutiveUpCandles >= MINIMUM_HIGH_PRICE_TREND_UNTIL_TRADE) {
+    logger.silly(`${message.product_id}: Number of candles where the trade price has been above all EMAs: ${productData[smallerGranularity].consecutiveUpCandles}`)
     logger.silly(`${message.product_id}: Smaller granularity EMA percent difference: ${smallerGranularityEmaPeriodsChange}`)
 
     // When both the smaller granularity EMAs are within .01% of each other (meaning they are about to cross or have already)
@@ -207,11 +195,12 @@ module.exports = (message, priceTracker) => {
   }
 
   // Put this logic below the ema logic, as it is theoretically more reliable
-  if (buyTriggers >= 6 && priceIsBelowEma) {
-    logger.debug(`${message.product_id}: Buy triggers reached`)
-    return 'buy'
-  } else if (sellTriggers >= 6 && priceIsAboveEma) {
-    logger.debug(`${message.product_id}: Sell triggers reached`)
-    return 'sell'
-  }
+  // Ignore this logic, as it seems to buy/sell too early
+  // if (buyTriggers >= 6 && priceIsBelowEma) {
+  //   logger.debug(`${message.product_id}: Buy triggers reached`)
+  //   return 'buy'
+  // } else if (sellTriggers >= 6 && priceIsAboveEma) {
+  //   logger.debug(`${message.product_id}: Sell triggers reached`)
+  //   return 'sell'
+  // }
 }
