@@ -21,16 +21,18 @@ module.exports = (message, priceTracker) => {
       const lastEma = new BigNumber(last(ind.ema))
       const percent = percentChange(lastEma, message.price)
 
+      logger.silly(`${message.product_id}: ${granularity / 60}min EMA${period} (${lastEma.toFixed(2)}) difference: ${percent.toFixed(2)}%`)
+
       // Only count the slower 3/4 averages
-      if (granularity !== smallerGranularity && period !== smallerPeriod) {
-        if (percent.isPositive()) {
-          priceBelowOtherEmas = false
-        } else {
-          priceAboveOtherEmas = false
-        }
+      if (granularity === smallerGranularity && period === smallerPeriod) {
+        continue
       }
 
-      logger.silly(`${message.product_id}: ${granularity / 60}min EMA${period} (${lastEma.toFixed(2)}) difference: ${percent.toFixed(2)}%`)
+      if (percent.isPositive()) {
+        priceBelowOtherEmas = false
+      } else {
+        priceAboveOtherEmas = false
+      }
     }
   }
 
