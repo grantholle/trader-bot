@@ -11,8 +11,8 @@ const smallerGranularity = Math.min(...granularities)
 
 module.exports = (message, priceTracker) => {
   const productData = priceTracker[message.product_id]
-  const priceBelowOtherEmas = true
-  const priceAboveOtherEmas = true
+  let priceBelowOtherEmas = true
+  let priceAboveOtherEmas = true
 
   for (const granularity of granularities) {
     // Check if the current price is above/below the ema's
