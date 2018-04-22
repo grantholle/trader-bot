@@ -53,13 +53,7 @@ const buy = async (product, price, balance, productData) => {
       product_id: product
     }
 
-    // If we're live trading, submit the trade
-    // Otherwise just send the dummy data back
-    if (liveTrade) {
-      return gdax.buy(params)
-    }
-
-    return params
+    return gdax.buy(params)
   }
 
   logger.info(`Insufficient USD account balance ($${dollars.toFixed(2)}) to make a coin purchase @ $${price.toFixed(2)}`)
@@ -98,13 +92,7 @@ const sell = async (product, price, balance, productData) => {
 
     positions[product].canBuy = true
 
-    // If we're live trading, submit the trade
-    // Otherwise just send the dummy data back
-    if (liveTrade) {
-      return gdax.sell(params)
-    }
-
-    return params
+    return gdax.sell(params)
   }
 
   logger.info(`Insufficient ${currency} account balance (${coinsToSell.toFixed(8)}) to sell coins @ $${price.toFixed(2)}`)
@@ -128,7 +116,8 @@ module.exports = async (side, product, price) => {
   let productData
 
   // Using flags when we've made purchases/buys to cut down on api usage
-  if ((side === 'buy' && !positions[product].canBuy) || (side === 'sell' && !positions[product].canSell)) {
+  // If we're not live trading don't mess with the api's
+  if (((side === 'buy' && !positions[product].canBuy) || (side === 'sell' && !positions[product].canSell)) || !liveTrade) {
     logger.debug(`${product}: Not in position to ${side}. Potential ${side} @ $${price.toFixed(2)}`)
     return
   }
