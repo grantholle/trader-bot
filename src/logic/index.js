@@ -2,7 +2,8 @@
 
 const submitTrade = require('../trade')
 const logic = [
-  require('./techs')
+  // require('./techs')
+  require('./ema')
 ]
 
 module.exports = (message, priceTracker) => {
