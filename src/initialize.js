@@ -6,7 +6,7 @@ const { products, granularities } = require('./config')
 const { clone } = require('lodash')
 const accountBalances = require('./accounts')
 const BigNumber = require('bignumber.js')
-const { getIndicators, highLowSpread, percentChange } = require('./utilities')
+const { percentChange, getIndicators, highLowSpread } = require('./utilities')
 
 module.exports = () => {
   const priceTracker = {}
@@ -104,6 +104,9 @@ module.exports = () => {
             } else if (tracker.consecutiveDownCandles > 0 && tracker.trendingUp) {
               tracker.consecutiveDownCandles--
             }
+
+            logger.debug(`${product}: ${granularity / 60}min candle trended ${tracker.trendingDown ? 'down' : 'up'} from previous candle`)
+            logger.debug(`${product}: ${granularity / 60}min consecutive up candles: ${tracker.consecutiveUpCandles}; consecutive down ${tracker.consecutiveDownCandles}`)
 
             // Do some analysis on the last candle...
           }, granularity * 1000) // Granularity is in seconds
