@@ -27,18 +27,14 @@ module.exports = (message, priceTracker) => {
   const smallIndicators = productData[smallerGranularity].indicators
   const [emaOne, emaTwo] = periods.map(p => new BigNumber(last(smallIndicators[p].ema)))
   const smallerGranularityEmaPeriodsChange = smallIndicators.emaPercentDifference
-  const currentPriceChangeFromSmallerEma = percentChange(emaOne, message.price)
 
   // When both the smaller granularity EMAs are within -.01% of each other (meaning they are about to cross or have already)
   // and have a very large negative or positive percent difference between the current trade price
-  // if (smallerGranularityEmaPeriodsChange.isGreaterThanOrEqualTo(-0.01) && currentPriceChangeFromSmallerEma.isGreaterThanOrEqualTo(-0.001)) {
   if (smallIndicators[smallerPeriod].averageGain.isNegative() && smallerGranularityEmaPeriodsChange.isGreaterThanOrEqualTo(-0.1)) {
     return 'buy'
-  }
-  // When both the smaller granularity EMAs are within .01% of each other (meaning they are about to cross or have already)
-  // and have a very large negative or positive percent difference between the current trade price
-  // if (smallerGranularityEmaPeriodsChange.isLessThanOrEqualTo(0.01) && currentPriceChangeFromSmallerEma.isLessThanOrEqualTo(0.001)) {
-  else if (smallIndicators[smallerPeriod].averageGain.isPositive() && smallerGranularityEmaPeriodsChange.isLessThanOrEqualTo(0.1)) {
+  } else if (smallIndicators[smallerPeriod].averageGain.isPositive() && smallerGranularityEmaPeriodsChange.isLessThanOrEqualTo(0.1)) {
+    // When both the smaller granularity EMAs are within .01% of each other (meaning they are about to cross or have already)
+    // and have a very large negative or positive percent difference between the current trade price
     return 'sell'
   }
 
