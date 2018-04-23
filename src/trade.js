@@ -8,6 +8,8 @@ const gdaxProducts = require('./products')
 const { liveTrade, products } = require('./config')
 const pusher = require('./pushbullet')
 const cancelOpenOrders = require('./orders')
+const moment = require('moment')
+
 const positions = products.reduce((obj, product) => {
   obj[product] = {
     canSell: true,
@@ -16,6 +18,8 @@ const positions = products.reduce((obj, product) => {
 
   return obj
 }, {})
+
+let lastTradeTime = moment()
 
 // Buying requires a little bit of preparation
 // We have to check account available balances
@@ -117,7 +121,8 @@ module.exports = async (side, product, price) => {
 
   // Using flags when we've made purchases/buys to cut down on api usage
   // If we're not live trading don't mess with the api's
-  if (((side === 'buy' && !positions[product].canBuy) || (side === 'sell' && !positions[product].canSell)) || !liveTrade) {
+  // If the last trade time was within 5 minutes, don't trade
+  if (((side === 'buy' && !positions[product].canBuy) || (side === 'sell' && !positions[product].canSell)) || !liveTrade || moment().diff(lastTradeTime, 'min') < 5) {
     logger.debug(`${product}: Not in position to ${side}. Potential ${side} @ $${price.toFixed(2)}`)
     return
   }
@@ -145,11 +150,7 @@ module.exports = async (side, product, price) => {
     logger.error(`${product}: Failed placing limit ${side} order`, err)
   }
 
-  // Trade wasn't placed
-  if (!res) {
-    return
-  }
-
+  lastTradeTime = moment()
   const message = `${product}: Placed limit ${side} order for ${res.size} coins @ $${res.price}`
 
   pusher[side](message)
