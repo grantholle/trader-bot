@@ -93,13 +93,16 @@ module.exports = () => {
             tracker.trendingUp = c.close.isGreaterThanOrEqualTo(tracker.allCandles[tracker.allCandles.length - 2].close)
             tracker.trendingDown = !tracker.trendingUp
 
-            if (tracker.trendingUp) {
+            // Only track this for the last 10 candles
+            // After 10 candles worth of data has been collected,
+            // The total of down and up candles should equal 10
+            if (tracker.trendingUp && tracker.consecutiveUpCandles < 11) {
               tracker.consecutiveUpCandles++
             } else if (tracker.consecutiveUpCandles > 0 && tracker.trendingDown) {
               tracker.consecutiveUpCandles--
             }
 
-            if (tracker.trendingDown) {
+            if (tracker.trendingDown && tracker.consecutiveDownCandles < 11) {
               tracker.consecutiveDownCandles++
             } else if (tracker.consecutiveDownCandles > 0 && tracker.trendingUp) {
               tracker.consecutiveDownCandles--
