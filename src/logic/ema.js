@@ -8,11 +8,13 @@ const { percentChange } = require('../utilities')
 
 const smallerPeriod = Math.min(...periods)
 const smallerGranularity = Math.min(...granularities)
+const largerGranularity = Math.max(...granularities)
 
 module.exports = (message, priceTracker) => {
   const productData = priceTracker[message.product_id]
   let priceBelowOtherEmas = true
   let priceAboveOtherEmas = true
+  let priceAboveSlowEmas = true
 
   for (const granularity of granularities) {
     // Check if the current price is above/below the ema's
@@ -23,9 +25,14 @@ module.exports = (message, priceTracker) => {
 
       logger.silly(`${message.product_id}: ${granularity / 60}min EMA${period} (${lastEma.toFixed(2)}) difference: ${percent.toFixed(2)}%`)
 
-      // Only count the slower 3/4 averages
+      // Only count the slower 3/4 averages for the "other ema" check
       if (granularity === smallerGranularity && period === smallerPeriod) {
         continue
+      }
+
+      // Do a check on the larger/slower ema
+      if (granularity === largerGranularity && message.price.isLessThan(lastEma)) {
+        priceAboveSlowEmas = false
       }
 
       if (percent.isPositive()) {
@@ -40,13 +47,15 @@ module.exports = (message, priceTracker) => {
   const smallIndicators = productData[smallerGranularity].indicators
   const priceAboveSmallEma = percentChange(last(smallIndicators[smallerPeriod].ema), message.price).isPositive()
   const smallerGranularityEmaPeriodsChange = smallIndicators.emaPercentDifference
-  const positiveGain = smallIndicators[smallerPeriod].averageGain.isGreaterThan(smallIndicators[smallerPeriod].averageLoss)
+  const smallEmaHasPositiveGain = smallIndicators[smallerPeriod].averageGain.isGreaterThan(smallIndicators[smallerPeriod].averageLoss)
 
   // When both the smaller granularity EMAs are within -.01% of each other (meaning they are about to cross or have already)
   // and have a very large negative or positive percent difference between the current trade price
-  if (!positiveGain && priceAboveSmallEma && priceBelowOtherEmas && smallerGranularityEmaPeriodsChange.isGreaterThanOrEqualTo(-0.05)) {
+  // if (!smallEmaHasPositiveGain && priceAboveSmallEma && priceBelowOtherEmas && smallerGranularityEmaPeriodsChange.isGreaterThanOrEqualTo(-0.1)) {
+  if (!smallEmaHasPositiveGain && priceAboveSmallEma && !priceAboveSlowEmas && smallerGranularityEmaPeriodsChange.isGreaterThanOrEqualTo(-0.1)) {
     return 'buy'
-  } else if (positiveGain && !priceAboveSmallEma && priceAboveOtherEmas && smallerGranularityEmaPeriodsChange.isLessThanOrEqualTo(0.05)) {
+  // } else if (smallEmaHasPositiveGain && !priceAboveSmallEma && priceAboveOtherEmas && smallerGranularityEmaPeriodsChange.isLessThanOrEqualTo(0.1)) {
+  } else if (smallEmaHasPositiveGain && !priceAboveSmallEma && priceAboveSlowEmas && smallerGranularityEmaPeriodsChange.isLessThanOrEqualTo(0.1)) {
     // When both the smaller granularity EMAs are within .01% of each other (meaning they are about to cross or have already)
     // and have a very large negative or positive percent difference between the current trade price
     return 'sell'
