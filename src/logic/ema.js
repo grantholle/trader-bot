@@ -52,10 +52,10 @@ module.exports = (message, priceTracker) => {
   // When both the smaller granularity EMAs are within -.01% of each other (meaning they are about to cross or have already)
   // and have a very large negative or positive percent difference between the current trade price
   // if (!smallEmaHasPositiveGain && priceAboveSmallEma && priceBelowOtherEmas && smallerGranularityEmaPeriodsChange.isGreaterThanOrEqualTo(-0.1)) {
-  if (!smallEmaHasPositiveGain && priceAboveSmallEma && !priceAboveSlowEmas && smallerGranularityEmaPeriodsChange.isGreaterThanOrEqualTo(-0.1)) {
+  if (!smallEmaHasPositiveGain && priceAboveSmallEma && !priceAboveSlowEmas && smallerGranularityEmaPeriodsChange.isGreaterThanOrEqualTo(-0.075)) {
     return 'buy'
   // } else if (smallEmaHasPositiveGain && !priceAboveSmallEma && priceAboveOtherEmas && smallerGranularityEmaPeriodsChange.isLessThanOrEqualTo(0.1)) {
-  } else if (smallEmaHasPositiveGain && !priceAboveSmallEma && priceAboveSlowEmas && smallerGranularityEmaPeriodsChange.isLessThanOrEqualTo(0.1)) {
+  } else if (smallEmaHasPositiveGain && !priceAboveSmallEma && priceAboveSlowEmas && smallerGranularityEmaPeriodsChange.isLessThanOrEqualTo(0.075)) {
     // When both the smaller granularity EMAs are within .01% of each other (meaning they are about to cross or have already)
     // and have a very large negative or positive percent difference between the current trade price
     return 'sell'
