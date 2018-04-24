@@ -150,6 +150,10 @@ module.exports = async (side, product, price) => {
     logger.error(`${product}: Failed placing limit ${side} order`, err)
   }
 
+  if (!res) {
+    return logger.info(`${product}: Did not place ${side} order`)
+  }
+
   lastTradeTime = moment()
   const message = `${product}: Placed limit ${side} order for ${res.size} coins @ $${res.price}`
 
