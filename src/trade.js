@@ -36,7 +36,7 @@ const buy = async (product, price, balance, productData) => {
   const dollars = new BigNumber(balance.USD.available)
   let coinRatio = positions[product].buyRatio.plus(.25)
 
-  if (coinRatio.equals(1.25)) {
+  if (coinRatio.isEqualTo(1.25)) {
     coinRatio = coinRatio.minus(1)
   }
 
@@ -84,7 +84,7 @@ const sell = async (product, price, balance, productData) => {
   const totalCoinsAvailable = new BigNumber(balance[currency].available)
   let coinRatio = positions[product].buyRatio.plus(.25)
 
-  if (coinRatio.equals(1.25)) {
+  if (coinRatio.isEqualTo(1.25)) {
     coinRatio = coinRatio.minus(1)
   }
 
