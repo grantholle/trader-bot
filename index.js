@@ -16,7 +16,7 @@ let reconnectAttempts = 0
 let priceTracker = {}
 let heartbeatTimeout
 
-logger.info(`Trading is ${liveTrade ? '' : 'NOT'} live`)
+logger.info(`Trading is${liveTrade ? '' : ' NOT'} live`)
 
 gdaxWebsocket.on('open', () => {
   logger.info(`Connected to ${gdaxWebsocket.websocketURI}`)
