@@ -11,6 +11,9 @@ const cancelOpenOrders = require('./orders')
 const moment = require('moment')
 const lastTradeTimes = {}
 
+// Time between trades in seconds
+const tradeWaitTime = 60
+
 const positions = products.reduce((obj, product) => {
   obj[product] = {
     canSell: true,
@@ -130,7 +133,7 @@ module.exports = async (side, product, price) => {
     return logger.info(`Currently not live trading. Unplaced ${side} order @ $${price.toFixed(2)}`)
   }
 
-  if (moment().diff(lastTradeTimes[product], 'minutes') < 5) {
+  if (moment().diff(lastTradeTimes[product], 'seconds') < tradeWaitTime) {
     return logger.info(`${product}: Not enough time has passed. Unplaced ${side} order @ $${price.toFixed(2)}`)
   }
 
