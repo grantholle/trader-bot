@@ -10,6 +10,6 @@ const auth = {
 const options = {
   channels: ['ticker']
 }
-const connectionUrl = sandbox ? 'wss://ws-feed-public.sandbox.gdax.com' : 'wss://ws-feed.gdax.com'
+const connectionUrl = 'wss://ws-feed.gdax.com'
 
 module.exports = new WebsocketClient(products, connectionUrl, auth, options)
