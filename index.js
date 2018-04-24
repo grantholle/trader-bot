@@ -7,13 +7,15 @@ const gdaxWebsocket = require('./src/gdaxWebsocketClient')
 const init = require('./src/initialize')
 const tickerHandler = require('./src/ticker')
 const logger = require('./src/logger')
-const { products, granularities } = require('./src/config')
+const { products, granularities, liveTrade } = require('./src/config')
 const heartbeatReconnectDelay = 15000
 
 // Stores all candles, EMA data, and current-period candle data
 // This is the "data"
 let priceTracker = {}
 let heartbeatTimeout
+
+logger.info(`Trading is ${liveTrade ? '' : 'NOT'} live`)
 
 gdaxWebsocket.on('open', () => {
   logger.info(`Connected to ${gdaxWebsocket.websocketURI}`)
