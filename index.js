@@ -9,6 +9,7 @@ const tickerHandler = require('./src/ticker')
 const logger = require('./src/logger')
 const { products, granularities, liveTrade } = require('./src/config')
 const heartbeatReconnectDelay = 15000
+let reconnectAttempts = 0
 
 // Stores all candles, EMA data, and current-period candle data
 // This is the "data"
@@ -26,6 +27,7 @@ gdaxWebsocket.on('open', () => {
   // current EMA for each granularity and period
   init().then(tracker => {
     priceTracker = tracker
+    reconnectAttempts = 0
 
     // Only attach the listener after we've been initialized
     gdaxWebsocket.on('message', message => {
@@ -51,4 +53,11 @@ gdaxWebsocket.on('close', () => {
   }
 })
 
-gdaxWebsocket.on('error', logger.error)
+gdaxWebsocket.on('error', err => {
+  logger.error(`WebSocket error: ${err.message}`)
+
+  // Attempt to reconnect after 30 seconds up to 4 times
+  if (reconnectAttempts < 5) {
+    setTimeout(gdaxWebsocket.connect, 30000)
+  }
+})
