@@ -48,7 +48,9 @@ gdaxWebsocket.on('close', () => {
   // Stop all the intervals
   for (const product in products) {
     for (const granularity of granularities) {
-      clearInterval(priceTracker[product][granularity].interval)
+      if (priceTracker[product]) {
+        clearInterval(priceTracker[product][granularity].interval)
+      }
     }
   }
 })
