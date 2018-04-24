@@ -1,6 +1,7 @@
 'use strict'
 
 const PushBullet = require('pushbullet')
+const logger = require('./logger')
 let pusher = false
 
 try {
@@ -13,13 +14,21 @@ module.exports = {
       return
     }
 
-    pusher.note({}, 'Buy! Buy! Buy!', msg)
+    try {
+      pusher.note({}, 'Buy! Buy! Buy!', msg)
+    } catch (err) {
+      logger.error(`Failed pushing note: ${err.message}`)
+    }
   },
   sell (msg) {
     if (!pusher) {
       return
     }
 
-    pusher.note({}, 'Sell! Sell! Sell!', msg)
+    try {
+      pusher.note({}, 'Sell! Sell! Sell!', msg)
+    } catch (err) {
+      logger.error(`Failed pushing note: ${err.message}`)
+    }
   }
 }
