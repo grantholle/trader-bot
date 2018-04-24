@@ -14,21 +14,17 @@ module.exports = {
       return
     }
 
-    try {
-      pusher.note({}, 'Buy! Buy! Buy!', msg)
-    } catch (err) {
+    pusher.note({}, 'Buy! Buy! Buy!', msg).catch(err => {
       logger.error(`Failed pushing note: ${err.message}`)
-    }
+    })
   },
   sell (msg) {
     if (!pusher) {
       return
     }
 
-    try {
-      pusher.note({}, 'Sell! Sell! Sell!', msg)
-    } catch (err) {
+    pusher.note({}, 'Sell! Sell! Sell!', msg).catch(err => {
       logger.error(`Failed pushing note: ${err.message}`)
-    }
+    })
   }
 }
