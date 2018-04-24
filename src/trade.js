@@ -122,7 +122,7 @@ module.exports = async (side, product, price) => {
   // Using flags when we've made purchases/buys to cut down on api usage
   // If we're not live trading don't mess with the api's
   // If the last trade time was within 5 minutes, don't trade
-  if (((side === 'buy' && !positions[product].canBuy) || (side === 'sell' && !positions[product].canSell)) || !liveTrade || moment().diff(lastTradeTime, 'min') < 5) {
+  if (((side === 'buy' && !positions[product].canBuy) || (side === 'sell' && !positions[product].canSell)) || !liveTrade || moment().diff(lastTradeTime, 'minutes') < 5) {
     logger.debug(`${product}: Not in position to ${side}. Potential ${side} @ $${price.toFixed(2)}`)
     return
   }
