@@ -54,7 +54,8 @@ const buy = async (product, price, balance, productData) => {
     const params = {
       size: coinsToBuy.toFixed(8, BigNumber.ROUND_DOWN),
       price: price.toFixed(2),
-      product_id: product
+      product_id: product,
+      post_only: true
     }
 
     return gdax.buy(params)
@@ -91,7 +92,8 @@ const sell = async (product, price, balance, productData) => {
     const params = {
       size: coinsToSell.toFixed(8, BigNumber.ROUND_DOWN),
       price: price.toFixed(2),
-      product_id: product
+      product_id: product,
+      post_only: true
     }
 
     positions[product].canBuy = true
