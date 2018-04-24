@@ -15,6 +15,7 @@ module.exports = (message, priceTracker) => {
   let priceBelowOtherEmas = true
   let priceAboveOtherEmas = true
   let priceAboveSlowEmas = true
+  let priceBelowSlowEmas = true
 
   for (const granularity of granularities) {
     // Check if the current price is above/below the ema's
@@ -33,6 +34,8 @@ module.exports = (message, priceTracker) => {
       // Do a check on the larger/slower ema
       if (granularity === largerGranularity && message.price.isLessThan(lastEma)) {
         priceAboveSlowEmas = false
+      } else if (granularity === largerGranularity && message.price.isGreaterThan(lastEma)) {
+        priceBelowSlowEmas = false
       }
 
       if (percent.isPositive()) {
@@ -52,7 +55,7 @@ module.exports = (message, priceTracker) => {
   // When both the smaller granularity EMAs are within -.01% of each other (meaning they are about to cross or have already)
   // and have a very large negative or positive percent difference between the current trade price
   // if (!smallEmaHasPositiveGain && priceAboveSmallEma && priceBelowOtherEmas && smallerGranularityEmaPeriodsChange.isGreaterThanOrEqualTo(-0.1)) {
-  if (!smallEmaHasPositiveGain && priceAboveSmallEma && !priceAboveSlowEmas && smallerGranularityEmaPeriodsChange.isGreaterThanOrEqualTo(-0.075)) {
+  if (!smallEmaHasPositiveGain && priceAboveSmallEma && priceBelowSlowEmas && smallerGranularityEmaPeriodsChange.isGreaterThanOrEqualTo(-0.075)) {
     return 'buy'
   // } else if (smallEmaHasPositiveGain && !priceAboveSmallEma && priceAboveOtherEmas && smallerGranularityEmaPeriodsChange.isLessThanOrEqualTo(0.1)) {
   } else if (smallEmaHasPositiveGain && !priceAboveSmallEma && priceAboveSlowEmas && smallerGranularityEmaPeriodsChange.isLessThanOrEqualTo(0.075)) {
