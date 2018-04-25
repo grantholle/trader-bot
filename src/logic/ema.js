@@ -48,19 +48,18 @@ module.exports = (message, priceTracker) => {
 
   // Holds the 2 emas of the smaller granularity
   const smallIndicators = productData[smallerGranularity].indicators
-  const priceAboveSmallEma = percentChange(last(smallIndicators[smallerPeriod].ema), message.price).isPositive()
+  // const priceAboveSmallEma = percentChange(last(smallIndicators[smallerPeriod].ema), message.price).isPositive()
+  const lastCandleWasUp = percentChange(last(smallIndicators[smallerPeriod].ema), last(smallIndicators[smallerPeriod].allCandles).close).isPositive()
   const smallerGranularityEmaPeriodsChange = smallIndicators.emaPercentDifference
   const smallEmaHasPositiveGain = smallIndicators[smallerPeriod].averageGain.isGreaterThanOrEqualTo(smallIndicators[smallerPeriod].averageLoss)
 
   // When both the smaller granularity EMAs are within -.01% of each other (meaning they are about to cross or have already)
   // and have a very large negative or positive percent difference between the current trade price
-  // if (!smallEmaHasPositiveGain && priceAboveSmallEma && priceBelowOtherEmas && smallerGranularityEmaPeriodsChange.isGreaterThanOrEqualTo(-0.1)) {
-  if (!smallEmaHasPositiveGain && priceAboveSmallEma && priceBelowSlowEmas && smallerGranularityEmaPeriodsChange.isGreaterThanOrEqualTo(-0.075)) {
+  if (!smallEmaHasPositiveGain && lastCandleWasUp && priceBelowSlowEmas && smallerGranularityEmaPeriodsChange.isGreaterThanOrEqualTo(-0.075)) {
     return 'buy'
-  // } else if (smallEmaHasPositiveGain && !priceAboveSmallEma && priceAboveOtherEmas && smallerGranularityEmaPeriodsChange.isLessThanOrEqualTo(0.1)) {
-  } else if (smallEmaHasPositiveGain && !priceAboveSmallEma && priceAboveSlowEmas && smallerGranularityEmaPeriodsChange.isLessThanOrEqualTo(0.075)) {
-    // When both the smaller granularity EMAs are within .01% of each other (meaning they are about to cross or have already)
-    // and have a very large negative or positive percent difference between the current trade price
+  // When both the smaller granularity EMAs are within .01% of each other (meaning they are about to cross or have already)
+  // and have a very large negative or positive percent difference between the current trade price
+  } else if (smallEmaHasPositiveGain && !lastCandleWasUp && priceAboveSlowEmas && smallerGranularityEmaPeriodsChange.isLessThanOrEqualTo(0.075)) {
     return 'sell'
   }
 
