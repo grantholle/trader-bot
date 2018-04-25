@@ -3,7 +3,7 @@
 const logger = require('./logger')
 const { periods } = require('./config')
 const BigNumber = require('bignumber.js')
-const { ema, averagegain, averageloss } = require('technicalindicators')
+const { ema, averagegain, averageloss, macd } = require('technicalindicators')
 const { last } = require('lodash')
 const largerPeriod = Math.max(...periods)
 const smallerPeriod = Math.min(...periods)
@@ -31,6 +31,14 @@ exports.getIndicators = async (product, granularity, values) => {
     indicators[period].averageLoss = new BigNumber(last(averageloss({ period, values })).toString())
     logger.debug(`${product}: Average loss period ${period} for last ${granularity / 60}min candle: $${indicators[period].averageLoss.toFixed(2)}`)
   }
+
+  // Calculate the macd
+  const lastMacd = last(macd({ values, fastPeriod: smallerPeriod, slowPeriod: largerPeriod, signalPeriod: 9 }))
+  lastMacd.MACD = new BigNumber(lastMacd.MACD.toString())
+  lastMacd.signal = new BigNumber(lastMacd.signal.toString())
+
+  indicators.macd = lastMacd
+  logger.debug(`${product}: MACD for ${granularity / 60}min candles: MACD: ${lastMacd.MACD.toFixed(4)}, signal: ${lastMacd.signal.toFixed(4)}`)
 
   indicators.smallerEmaBelowLarger = last(indicators[smallerPeriod].ema).isLessThan(last(indicators[largerPeriod].ema))
   indicators.largerEmaBelowSmaller = !indicators.smallerEmaBelowLarger
