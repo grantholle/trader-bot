@@ -49,7 +49,7 @@ module.exports = (message, priceTracker) => {
   // Holds the 2 emas of the smaller granularity
   const smallIndicators = productData[smallerGranularity].indicators
   // const priceAboveSmallEma = percentChange(last(smallIndicators[smallerPeriod].ema), message.price).isPositive()
-  const lastCandleWasUp = percentChange(last(smallIndicators[smallerPeriod].ema), last(smallIndicators[smallerPeriod].allCandles).close).isPositive()
+  const lastCandleWasUp = percentChange(last(smallIndicators[smallerPeriod].ema), last(productData[smallerGranularity].allCandles).close).isPositive()
   const smallerGranularityEmaPeriodsChange = smallIndicators.emaPercentDifference
   const smallEmaHasPositiveGain = smallIndicators[smallerPeriod].averageGain.isGreaterThanOrEqualTo(smallIndicators[smallerPeriod].averageLoss)
 
