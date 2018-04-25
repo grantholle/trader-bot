@@ -90,25 +90,25 @@ module.exports = () => {
             tracker.indicators = await getIndicators(product, granularity, tracker.allCandles.map(c => c.close.toNumber()))
 
             // Check if the candles are up from the previous one
-            tracker.trendingUp = c.close.isGreaterThanOrEqualTo(tracker.allCandles[tracker.allCandles.length - 2].close)
-            tracker.trendingDown = !tracker.trendingUp
+            tracker.lastCandleUp = c.close.isGreaterThanOrEqualTo(tracker.allCandles[tracker.allCandles.length - 2].close)
+            tracker.lastCandleDown = !tracker.lastCandleUp
 
             // Only track this for the last 10 candles
             // After 10 candles worth of data has been collected,
             // The total of down and up candles should equal 10
-            if (tracker.trendingUp && tracker.consecutiveUpCandles < 10) {
+            if (tracker.lastCandleUp && tracker.consecutiveUpCandles < 10) {
               tracker.consecutiveUpCandles++
-            } else if (tracker.consecutiveUpCandles > 0 && tracker.trendingDown) {
+            } else if (tracker.consecutiveUpCandles > 0 && tracker.lastCandleDown) {
               tracker.consecutiveUpCandles--
             }
 
-            if (tracker.trendingDown && tracker.consecutiveDownCandles < 10) {
+            if (tracker.lastCandleDown && tracker.consecutiveDownCandles < 10) {
               tracker.consecutiveDownCandles++
-            } else if (tracker.consecutiveDownCandles > 0 && tracker.trendingUp) {
+            } else if (tracker.consecutiveDownCandles > 0 && tracker.lastCandleUp) {
               tracker.consecutiveDownCandles--
             }
 
-            logger.debug(`${product}: ${granularity / 60}min candle trended ${tracker.trendingDown ? 'down' : 'up'} from previous candle`)
+            logger.debug(`${product}: ${granularity / 60}min candle trended ${tracker.lastCandleDown ? 'down' : 'up'} from previous candle`)
             logger.debug(`${product}: ${granularity / 60}min consecutive up candles: ${tracker.consecutiveUpCandles}; consecutive down ${tracker.consecutiveDownCandles}`)
 
             // Do some analysis on the last candle...
