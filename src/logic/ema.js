@@ -49,17 +49,25 @@ module.exports = (message, priceTracker) => {
   // Holds the 2 emas of the smaller granularity
   const smallIndicators = productData[smallerGranularity].indicators
   // const priceAboveSmallEma = percentChange(last(smallIndicators[smallerPeriod].ema), message.price).isPositive()
-  const lastCandleWasUp = percentChange(last(smallIndicators[smallerPeriod].ema), last(productData[smallerGranularity].allCandles).close).isPositive()
-  const smallerGranularityEmaPeriodsChange = smallIndicators.emaPercentDifference
+
+  // If the previous smaller period candle closed above the faster ema
+  const lastCandleClosedUp = percentChange(last(smallIndicators[smallerPeriod].ema), last(productData[smallerGranularity].allCandles).close).isPositive()
+
+  // The faster ema crossed above or is about to cross above the slow ema
+  // Possibly indicating the start of an upward trend or currently in an up trend
+  const fastCrossedAboveSlow = smallIndicators.emaPercentDifference.isGreaterThanOrEqualTo(-0.075)
+
+  // The faster ema crossed below or is about to cross below the slow ema
+  // Possibly indicating the start of a downward trend or currently in a down trend
+  const fastCrossedBelowSlow = smallIndicators.emaPercentDifference.isLessThanOrEqualTo(0.075)
+
+  // This isn't necessarily a good indicator if it jumps rapidly
+  // NOT USED NOW
   const smallEmaHasPositiveGain = smallIndicators[smallerPeriod].averageGain.isGreaterThanOrEqualTo(smallIndicators[smallerPeriod].averageLoss)
 
-  // When both the smaller granularity EMAs are within -.01% of each other (meaning they are about to cross or have already)
-  // and have a very large negative or positive percent difference between the current trade price
-  if (!smallEmaHasPositiveGain && lastCandleWasUp && priceBelowSlowEmas && smallerGranularityEmaPeriodsChange.isGreaterThanOrEqualTo(-0.075)) {
+  if (lastCandleClosedUp && priceBelowSlowEmas && fastCrossedAboveSlow) {
     return 'buy'
-  // When both the smaller granularity EMAs are within .01% of each other (meaning they are about to cross or have already)
-  // and have a very large negative or positive percent difference between the current trade price
-  } else if (smallEmaHasPositiveGain && !lastCandleWasUp && priceAboveSlowEmas && smallerGranularityEmaPeriodsChange.isLessThanOrEqualTo(0.075)) {
+  } else if (!lastCandleClosedUp && priceAboveSlowEmas && fastCrossedBelowSlow) {
     return 'sell'
   }
 
