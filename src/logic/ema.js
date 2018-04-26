@@ -65,9 +65,9 @@ module.exports = (message, priceTracker) => {
   // NOT USED NOW
   const smallEmaHasPositiveGain = smallIndicators[smallerPeriod].averageGain.isGreaterThanOrEqualTo(smallIndicators[smallerPeriod].averageLoss)
 
-  if (lastCandleClosedUp && priceBelowSlowEmas && fastCrossedAboveSlow) {
+  if (lastCandleClosedUp && priceBelowSlowEmas && smallIndicators.fastJustCrossedAboveSlow) {
     return 'buy'
-  } else if (!lastCandleClosedUp && priceAboveSlowEmas && fastCrossedBelowSlow) {
+  } else if (!lastCandleClosedUp && priceAboveSlowEmas && smallIndicators.fastJustCrossedBelowSlow) {
     return 'sell'
   }
 

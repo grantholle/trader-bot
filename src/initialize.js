@@ -2,11 +2,15 @@
 
 const client = require('./gdaxClient')
 const logger = require('./logger')
-const { products, granularities } = require('./config')
+const { products, granularities, periods } = require('./config')
 const { clone } = require('lodash')
 const accountBalances = require('./accounts')
 const BigNumber = require('bignumber.js')
 const { percentChange, getIndicators, highLowSpread } = require('./utilities')
+
+const smallerPeriod = Math.min(...periods)
+const smallerGranularity = Math.min(...granularities)
+const largerGranularity = Math.max(...granularities)
 
 module.exports = () => {
   const priceTracker = {}
@@ -87,7 +91,7 @@ module.exports = () => {
             c.high = c.close
 
             // Recalculate the EMA
-            tracker.indicators = await getIndicators(product, granularity, tracker.allCandles.map(c => c.close.toNumber()))
+            tracker.indicators = getIndicators(product, granularity, tracker.allCandles.map(c => c.close.toNumber()))
 
             // Check if the candles are up from the previous one
             tracker.lastCandleUp = c.close.isGreaterThanOrEqualTo(tracker.allCandles[tracker.allCandles.length - 2].close)
@@ -110,6 +114,28 @@ module.exports = () => {
 
             logger.debug(`${product}: ${granularity / 60}min candle trended ${tracker.lastCandleDown ? 'down' : 'up'} from previous candle`)
             logger.debug(`${product}: ${granularity / 60}min consecutive up candles: ${tracker.consecutiveUpCandles}; consecutive down ${tracker.consecutiveDownCandles}`)
+
+            // Determine if this is the fast ema is about to or has already crossed the slow ema
+            if (granularity === smallerGranularity) {
+              // The fast is almost greater than the slow
+              const fastIsAboveSlow = tracker.indicators.emaPercentDifference.isGreaterThanOrEqualTo(-0.075)
+
+              // The previous ema comparison was less than almost-zero
+              const previousEmaUncrossedBelow = tracker.indicators.previousEmaPercentDifference.isLessThan(0.025)
+
+              // These indicate a buy
+              tracker.indicators.fastJustCrossedAboveSlow = fastIsAboveSlow && previousEmaUncrossedBelow
+
+              // The fast ema is almost lower than the slow ema
+              const fastIsBelowSlow = tracker.indicators.emaPercentDifference.isLessThanOrEqualTo(0.075)
+
+
+              // The previous ema comparison was greater than almost-zero
+              const previousEmaUncrossedAbove = tracker.indicators.previousEmaPercentDifference.isGreaterThan(-0.025)
+
+              // These indicate a sell
+              tracker.indicators.fastJustCrossedBelowSlow = fastIsBelowSlow && previousEmaUncrossedAbove
+            }
 
             // Do some analysis on the last candle...
           }, granularity * 1000) // Granularity is in seconds

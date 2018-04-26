@@ -4,7 +4,7 @@ const logger = require('./logger')
 const { periods } = require('./config')
 const BigNumber = require('bignumber.js')
 const { ema, averagegain, averageloss, macd } = require('technicalindicators')
-const { last } = require('lodash')
+const { last, nth } = require('lodash')
 const largerPeriod = Math.max(...periods)
 const smallerPeriod = Math.min(...periods)
 
@@ -12,7 +12,7 @@ exports.highLowSpread = candle => candle.high.minus(candle.low).toFixed(2)
 
 exports.candleChange = candle => candle.close.minus(candle.open).toFixed(2)
 
-exports.getIndicators = async (product, granularity, values) => {
+exports.getIndicators = (product, granularity, values) => {
   const indicators = {}
 
   for (const period of periods) {
@@ -43,6 +43,7 @@ exports.getIndicators = async (product, granularity, values) => {
   indicators.smallerEmaBelowLarger = last(indicators[smallerPeriod].ema).isLessThan(last(indicators[largerPeriod].ema))
   indicators.largerEmaBelowSmaller = !indicators.smallerEmaBelowLarger
   indicators.emaPercentDifference = exports.percentChange(last(indicators[largerPeriod].ema), last(indicators[smallerPeriod].ema))
+  indicators.previousEmaPercentDifference = exports.percentChange(nth(indicators[largerPeriod].ema, -2), nth(indicators[smallerPeriod].ema, -2))
 
   return indicators
 }
