@@ -15,7 +15,7 @@ const logOptions = {
     new winston.transports.File({
       filename: p.join(__dirname, '..', 'logs', 'trader.log'),
       maxsize: 1024000,
-      maxFiles: 5,
+      maxFiles: 15,
       showLevel: true,
       tailable: true,
       json: false,
