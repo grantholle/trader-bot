@@ -23,8 +23,10 @@ module.exports = (message, priceTracker) => {
       const ind = productData[granularity].indicators[period]
       const lastEma = new BigNumber(last(ind.ema))
       const percent = percentChange(lastEma, message.price)
+      const min = (granularity / 60).toString()
 
-      logger.silly(`${message.product_id}: ${granularity / 60}min EMA${period} (${lastEma.toFixed(2)}) difference: ${percent.toFixed(2)}%`)
+      logger.silly(`${message.product_id}: ${'0'.repeat(2 - min.length)}${min}min EMA${period} (${lastEma.toFixed(2)}): ${percent.toFixed(2)}%`)
+      logger.silly(`${message.product_id}: ${'0'.repeat(2 - min.length)}${min}min BB${period} lower (${ind.bb.lower.toFixed(2)}): ${percentChange(ind.bb.lower, message.price).toFixed(2)}%, upper (${ind.bb.upper.toFixed(2)}): ${percentChange(ind.bb.upper, message.price).toFixed(2)}`)
 
       // Only count the slower 3/4 averages for the "other ema" check
       if (granularity === smallerGranularity && period === smallerPeriod) {

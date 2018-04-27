@@ -3,7 +3,7 @@
 const logger = require('./logger')
 const { periods } = require('./config')
 const BigNumber = require('bignumber.js')
-const { ema, averagegain, averageloss, macd } = require('technicalindicators')
+const { ema, averagegain, averageloss, macd, bollingerbands } = require('technicalindicators')
 const { last, nth } = require('lodash')
 const largerPeriod = Math.max(...periods)
 const smallerPeriod = Math.min(...periods)
@@ -22,6 +22,11 @@ exports.getIndicators = (product, granularity, values) => {
     const avg = ema({ period, values })
     indicators[period].ema = avg.map(i => new BigNumber(i.toString()))
     logger.debug(`${product}: EMA${period} for last ${granularity / 60}min candle: ${last(indicators[period].ema).toFixed(2)}`)
+
+    // Calculate the period's BB
+    const bb = bollingerbands({ period, values, stdDev: 2 })
+    indicators[period].bb = last(bb)
+    logger.debug(`${product}: BB${period} ${granularity / 60}min lower: ${indicators[period].bb.lower.toFixed(2)}, upper: ${indicators[period].bb.upper.toFixed(2)}`)
 
     // Average gain
     indicators[period].averageGain = new BigNumber(last(averagegain({ period, values })).toString())

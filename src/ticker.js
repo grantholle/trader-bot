@@ -17,12 +17,15 @@ module.exports = (message, priceTracker) => {
 
   message.price = new BigNumber(message.price)
 
-  priceLogger.info(`${message.product_id}: ${message.price.toFixed(2)}`)
-  logger.verbose(`${message.product_id}: Trade: ${message.side} @ $${message.price.toFixed(2)} (${message.last_size})`)
+  logger.verbose(`${message.product_id}: Trade: ${message.side} @ $${message.price.toFixed(2)}`)
 
   // If it was the same price as last time, don't continue
   if (lastTickerPrice && message.price.isEqualTo(lastTickerPrice)) {
     return
+  }
+
+  if (lastTickerPrice) {
+    priceLogger.info(`${message.product_id}: ${message.price.isGreaterThan(lastTickerPrice) ? '▲' : '▼'} ${message.price.toFixed(2)}`)
   }
 
   const productData = priceTracker[message.product_id]
