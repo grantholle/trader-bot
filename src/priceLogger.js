@@ -11,13 +11,11 @@ const logOptions = {
       filename: p.join(__dirname, '..', 'logs', 'prices.log'),
       maxsize: 1000000,
       maxFiles: 5,
-      showLevel: false,
       tailable: true,
       json: false,
-      timestamp: () => moment().format('HH:mm:ss:SSS')
+      timestamp: () => moment().format('HH:mm:ss')
     })
-  ],
-  colorize: true
+  ]
 }
 
 module.exports = new winston.Logger(logOptions)

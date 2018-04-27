@@ -4,11 +4,13 @@ const gdax = require('./gdaxClient')
 const BigNumber = require('bignumber.js')
 const getAccounts = require('./accounts')
 const logger = require('./logger')
+const priceLogger = require('./priceLogger')
 const gdaxProducts = require('./products')
 const { liveTrade, products } = require('./config')
 const pusher = require('./pushbullet')
 const cancelOpenOrders = require('./orders')
 const moment = require('moment')
+const { oppositeSide } = require('./utilities')
 const lastTradeTimes = {}
 
 // Time between trades in seconds
@@ -16,8 +18,8 @@ const tradeWaitTime = 60
 
 const positions = products.reduce((obj, product) => {
   obj[product] = {
-    canSell: true,
-    canBuy: true,
+    sell: true,
+    buy: true,
     buyRatio: new BigNumber(0),
     sellRatio: new BigNumber(0)
   }
@@ -58,7 +60,7 @@ const buy = async (product, price, balance, productData) => {
 
   // Check to make sure it's above the min and below the max allowed trade quantities
   if (coinsToBuy.isGreaterThanOrEqualTo(productData.base_min_size)) {
-    positions[product].canSell = true
+    positions[product].sell = true
 
     // Execute the trade
     // Probably poll to make sure the order wasn't rejected somehow
@@ -74,7 +76,7 @@ const buy = async (product, price, balance, productData) => {
   }
 
   logger.info(`Insufficient USD account balance ($${dollars.toFixed(2)}) to make a coin purchase @ $${price.toFixed(2)}`)
-  positions[product].canBuy = false
+  positions[product].buy = false
 }
 
 const sell = async (product, price, balance, productData) => {
@@ -113,13 +115,13 @@ const sell = async (product, price, balance, productData) => {
       post_only: true
     }
 
-    positions[product].canBuy = true
+    positions[product].buy = true
 
     return gdax.sell(params)
   }
 
   logger.info(`Insufficient ${currency} account balance (${coinsToSell.toFixed(8)}) to sell coins @ $${price.toFixed(2)}`)
-  positions[product].canSell = false
+  positions[product].sell = false
 }
 
 const tradeActions = { buy, sell }
@@ -138,6 +140,8 @@ module.exports = async (side, product, price) => {
   let balance
   let productData
 
+  priceLogger.info(`${product}: ${side} @ ${price.toFixed(2)}`)
+
   // Using flags when we've made purchases/buys to cut down on api usage
   // If we're not live trading don't mess with the api's
   // If the last trade time was within 5 minutes, don't trade
@@ -149,7 +153,7 @@ module.exports = async (side, product, price) => {
     return logger.info(`${product}: Not enough time has passed. Unplaced ${side} order @ $${price.toFixed(2)}`)
   }
 
-  if ((side === 'buy' && !positions[product].canBuy) || (side === 'sell' && !positions[product].canSell)) {
+  if (!positions[product][side]) {
     return logger.info(`${product}: Not in position to ${side}. Potential ${side} @ $${price.toFixed(2)}`)
   }
 

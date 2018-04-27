@@ -74,3 +74,7 @@ exports.switchSide = (currentSide, product) => {
 
   return currentSide
 }
+
+exports.oppositeSide = (side) => {
+  return side === 'buy' ? 'sell' : 'buy'
+}

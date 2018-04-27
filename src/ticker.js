@@ -1,6 +1,7 @@
 'use strict'
 
 const logger = require('./logger')
+const priceLogger = require('./priceLogger')
 const { granularities } = require('./config')
 const BigNumber = require('bignumber.js')
 const { clone } = require('lodash')
@@ -16,6 +17,7 @@ module.exports = (message, priceTracker) => {
 
   message.price = new BigNumber(message.price)
 
+  priceLogger.info(`${message.product_id}: ${message.price.toFixed(2)}`)
   logger.verbose(`${message.product_id}: Trade: ${message.side} @ $${message.price.toFixed(2)} (${message.last_size})`)
 
   // If it was the same price as last time, don't continue
