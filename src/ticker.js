@@ -49,5 +49,5 @@ module.exports = (message, priceTracker) => {
   lastTickerPrice = clone(message.price)
 
   // The module that handles the logic to make trades
-  traderLogic(message, priceTracker)
+  traderLogic(message, productData)
 }

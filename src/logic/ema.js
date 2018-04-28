@@ -10,8 +10,7 @@ const smallerPeriod = Math.min(...periods)
 const smallerGranularity = Math.min(...granularities)
 const largerGranularity = Math.max(...granularities)
 
-module.exports = (message, priceTracker) => {
-  const productData = priceTracker[message.product_id]
+module.exports = (message, productData) => {
   let priceBelowOtherEmas = true
   let priceAboveOtherEmas = true
   let priceAboveSlowEmas = true
@@ -26,7 +25,6 @@ module.exports = (message, priceTracker) => {
       const min = (granularity / 60).toString()
 
       logger.silly(`${message.product_id}: ${'0'.repeat(2 - min.length)}${min}min EMA${period} (${lastEma.toFixed(2)}): ${percent.toFixed(2)}%`)
-      logger.silly(`${message.product_id}: ${'0'.repeat(2 - min.length)}${min}min BB${period} lower (${ind.bb.lower.toFixed(2)}): ${percentChange(ind.bb.lower, message.price).toFixed(2)}%, upper (${ind.bb.upper.toFixed(2)}): ${percentChange(ind.bb.upper, message.price).toFixed(2)}`)
 
       // Only count the slower 3/4 averages for the "other ema" check
       if (granularity === smallerGranularity && period === smallerPeriod) {
@@ -67,11 +65,11 @@ module.exports = (message, priceTracker) => {
   // NOT USED NOW
   const smallEmaHasPositiveGain = smallIndicators[smallerPeriod].averageGain.isGreaterThanOrEqualTo(smallIndicators[smallerPeriod].averageLoss)
 
-  if (lastCandleClosedUp && priceBelowSlowEmas && smallIndicators.fastJustCrossedAboveSlow) {
-    return 'buy'
-  } else if (!lastCandleClosedUp && priceAboveSlowEmas && smallIndicators.fastJustCrossedBelowSlow) {
-    return 'sell'
-  }
+  // if (lastCandleClosedUp && priceBelowSlowEmas && smallIndicators.fastJustCrossedAboveSlow) {
+  //   return 'buy'
+  // } else if (!lastCandleClosedUp && priceAboveSlowEmas && smallIndicators.fastJustCrossedBelowSlow) {
+  //   return 'sell'
+  // }
 
   return false
 }
