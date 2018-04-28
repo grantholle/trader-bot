@@ -2,13 +2,7 @@
 
 const logger = require('../logger')
 const { periods, granularities } = require('../config')
-const BigNumber = require('bignumber.js')
-const { last } = require('lodash')
 const { percentChange } = require('../utilities')
-
-const smallerPeriod = Math.min(...periods)
-const smallerGranularity = Math.min(...granularities)
-const largerGranularity = Math.max(...granularities)
 
 module.exports = (message, productData) => {
   let belowLower = 0
@@ -32,9 +26,9 @@ module.exports = (message, productData) => {
     }
   }
 
-  if (belowLower > 2) {
+  if (belowLower > 3) {
     return 'buy'
-  } else if (aboveUpper > 2) {
+  } else if (aboveUpper > 3) {
     return 'sell'
   }
 
