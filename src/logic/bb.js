@@ -20,7 +20,9 @@ module.exports = (message, productData) => {
 
       if (lowerChange.isPositive()) {
         belowLower = false
-      } else if (upperChange.isNegative()) {
+      }
+
+      if (upperChange.isNegative()) {
         aboveUpper = false
       }
     }
