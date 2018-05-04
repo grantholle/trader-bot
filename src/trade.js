@@ -187,6 +187,6 @@ module.exports = async (side, product, price) => {
   lastTradeTimes[product] = moment()
   const message = `${product}: Placed limit ${side} order for ${res.size} coins @ $${res.price}`
 
-  pusher[side](message)
+  // pusher[side](message)
   logger.info(message, res)
 }
