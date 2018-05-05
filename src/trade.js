@@ -7,10 +7,9 @@ const logger = require('./logger')
 const priceLogger = require('./priceLogger')
 const gdaxProducts = require('./products')
 const { liveTrade, products } = require('./config')
-const pusher = require('./pushbullet')
+// const pusher = require('./pushbullet')
 const cancelOpenOrders = require('./orders')
 const moment = require('moment')
-const { oppositeSide } = require('./utilities')
 const lastTradeTimes = {}
 
 // Time between trades in seconds

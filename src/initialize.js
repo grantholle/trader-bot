@@ -2,7 +2,7 @@
 
 const client = require('./gdaxClient')
 const logger = require('./logger')
-const { products, granularities, periods } = require('./config')
+const { products, granularities } = require('./config')
 const { clone } = require('lodash')
 const BigNumber = require('bignumber.js')
 const { percentChange, getIndicators, highLowSpread } = require('./utilities')

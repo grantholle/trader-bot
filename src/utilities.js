@@ -5,8 +5,6 @@ const { periods } = require('./config')
 const BigNumber = require('bignumber.js')
 const { ema, averagegain, averageloss, macd, bollingerbands } = require('technicalindicators')
 const { last, nth } = require('lodash')
-const largerPeriod = Math.max(...periods)
-const smallerPeriod = Math.min(...periods)
 
 exports.highLowSpread = candle => candle.high.minus(candle.low).toFixed(2)
 
