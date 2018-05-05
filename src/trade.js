@@ -158,20 +158,20 @@ module.exports = async (side, product, price) => {
   }
 
   try {
+    // Cancel open orders for this side and product
+    // If it fails, that's ok, attempt to trade anyway
+    await cancelOpenOrders(side, product)
+  } catch (err) {
+    logger.error(`${product}: Failed cancelling ${side} orders`)
+  }
+
+  try {
     // Check account balances and product information to make trade
     [balance, productData] = await Promise.all([getAccounts(), gdaxProducts()])
     productData = productData[product]
   } catch (err) {
     logger.error(`Failed fetching account information or gdax product information`, err)
     return
-  }
-
-  try {
-    // Cancel open orders for this side and product
-    // If it fails, that's ok, attempt to trade anyway
-    await cancelOpenOrders(side, product)
-  } catch (err) {
-    logger.error(`${product}: Failed cancelling ${side} orders`)
   }
 
   try {
