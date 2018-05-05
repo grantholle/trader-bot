@@ -28,7 +28,6 @@ const positions = products.reduce((obj, product) => {
   return obj
 }, {})
 
-
 // Buying requires a little bit of preparation
 // We have to check account available balances
 const buy = async (product, price, balance, productData) => {
