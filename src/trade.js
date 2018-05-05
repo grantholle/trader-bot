@@ -14,7 +14,7 @@ const { oppositeSide } = require('./utilities')
 const lastTradeTimes = {}
 
 // Time between trades in seconds
-const tradeWaitTime = 60
+const tradeWaitTime = 90
 
 const positions = products.reduce((obj, product) => {
   obj[product] = {
