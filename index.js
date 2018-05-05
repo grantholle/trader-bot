@@ -9,12 +9,12 @@ const tickerHandler = require('./src/ticker')
 const logger = require('./src/logger')
 const { products, granularities, liveTrade } = require('./src/config')
 let reconnectAttempts = 0
+let priceTracker = {}
 
 logger.info(`Trading is${liveTrade ? '' : ' NOT'} live`)
 
 gdaxWebsocket.on('open', async () => {
   logger.info(`Connected to ${gdaxWebsocket.websocketURI}`)
-  let priceTracker = {}
   let heartbeatTimeout
   const heartbeatReconnectDelay = 15000
 
