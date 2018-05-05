@@ -36,7 +36,7 @@ const buy = async (product, price, balance, productData) => {
 
   // If we can, calculate the total coins we can buy based on the available USD
   // available USD divided by message.price = number of coins we want to buy
-  const coinsToBuy = dollars.dividedBy(price)
+  let coinsToBuy = dollars.dividedBy(price)
 
   // This will never happen...
   if (coinsToBuy.isGreaterThan(productData.base_max_size)) {
