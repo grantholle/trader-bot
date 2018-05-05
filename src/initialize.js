@@ -85,7 +85,7 @@ module.exports = async () => {
           tracker.indicators = getIndicators(product, granularity, tracker.allCandles.map(c => c.close.toNumber()))
         }, granularity * 1000) // Granularity is in seconds
       } catch (err) {
-        return reject(err)
+        logger.error('Failed getting historical pricing data', err)
       }
     }
   }
