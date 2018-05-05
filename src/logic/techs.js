@@ -196,11 +196,11 @@ module.exports = (message, priceTracker) => {
 
   // Put this logic below the ema logic, as it is theoretically more reliable
   // Ignore this logic, as it seems to buy/sell too early
-  // if (buyTriggers >= 6 && priceIsBelowEma) {
-  //   logger.debug(`${message.product_id}: Buy triggers reached`)
-  //   return 'buy'
-  // } else if (sellTriggers >= 6 && priceIsAboveEma) {
-  //   logger.debug(`${message.product_id}: Sell triggers reached`)
-  //   return 'sell'
-  // }
+  if (buyTriggers >= 6 && priceIsBelowEma) {
+    logger.debug(`${message.product_id}: Buy triggers reached`)
+    return 'buy'
+  } else if (sellTriggers >= 6 && priceIsAboveEma) {
+    logger.debug(`${message.product_id}: Sell triggers reached`)
+    return 'sell'
+  }
 }

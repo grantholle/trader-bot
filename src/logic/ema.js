@@ -65,11 +65,11 @@ module.exports = (message, productData) => {
   // NOT USED NOW
   const smallEmaHasPositiveGain = smallIndicators[smallerPeriod].averageGain.isGreaterThanOrEqualTo(smallIndicators[smallerPeriod].averageLoss)
 
-  // if (lastCandleClosedUp && priceBelowSlowEmas && smallIndicators.fastJustCrossedAboveSlow) {
-  //   return 'buy'
-  // } else if (!lastCandleClosedUp && priceAboveSlowEmas && smallIndicators.fastJustCrossedBelowSlow) {
-  //   return 'sell'
-  // }
+  if (lastCandleClosedUp && priceBelowSlowEmas && smallIndicators.fastJustCrossedAboveSlow) {
+    return 'buy'
+  } else if (!lastCandleClosedUp && priceAboveSlowEmas && smallIndicators.fastJustCrossedBelowSlow) {
+    return 'sell'
+  }
 
   return false
 }
