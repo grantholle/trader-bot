@@ -75,11 +75,6 @@ const sell = async (product, price, balance, productData) => {
     coinsToSell = new BigNumber(productData.base_max_size)
   }
 
-  // If our less-risky sell amount isn't enough, sell everything available
-  if (coinsToSell.isLessThan(productData.base_min_size)) {
-    coinsToSell = totalCoinsAvailable
-  }
-
   // Check to make sure it's above the min and below the max allowed trade quantities
   if (coinsToSell.isGreaterThanOrEqualTo(productData.base_min_size)) {
     positions[product].buy = true
