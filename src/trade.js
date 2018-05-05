@@ -16,12 +16,11 @@ const lastTradeTimes = {}
 // Time between trades in seconds
 const tradeWaitTime = 90
 
+// This tracks whether we're capable of buying or selling
 const positions = products.reduce((obj, product) => {
   obj[product] = {
     sell: true,
-    buy: true,
-    buyRatio: new BigNumber(0),
-    sellRatio: new BigNumber(0)
+    buy: true
   }
 
   lastTradeTimes[product] = moment()
@@ -35,27 +34,15 @@ const positions = products.reduce((obj, product) => {
 const buy = async (product, price, balance, productData) => {
   price = price.minus(productData.quote_increment)
 
-  const dollars = new BigNumber(balance.USD.available)
-  let coinRatio = positions[product].buyRatio.plus(.25)
-
-  if (coinRatio.isEqualTo(1.25)) {
-    coinRatio = coinRatio.minus(1)
-  }
+  let dollars = new BigNumber(balance.USD.available).dividedBy(2)
 
   // If we can, calculate the total coins we can buy based on the available USD
   // available USD divided by message.price = number of coins we want to buy
-  // To spread the risk, only do about a fourth of total coins we could buy
-  const totalCoinPurchase = dollars.dividedBy(price)
-  let coinsToBuy = totalCoinPurchase.multipliedBy(coinRatio)
+  const coinsToBuy = dollars.dividedBy(price)
 
   // This will never happen...
   if (coinsToBuy.isGreaterThan(productData.base_max_size)) {
     coinsToBuy = new BigNumber(productData.base_max_size)
-  }
-
-  // If our less-risky buy isn't enough, buy all possible amounts
-  if (coinsToBuy.isLessThan(productData.base_min_size)) {
-    coinsToBuy = totalCoinPurchase
   }
 
   // Check to make sure it's above the min and below the max allowed trade quantities
@@ -83,15 +70,7 @@ const sell = async (product, price, balance, productData) => {
   price = price.plus(productData.quote_increment)
 
   const currency = product.split('-')[0]
-  const totalCoinsAvailable = new BigNumber(balance[currency].available)
-  let coinRatio = positions[product].buyRatio.plus(.25)
-
-  if (coinRatio.isEqualTo(1.25)) {
-    coinRatio = coinRatio.minus(1)
-  }
-
-  // Offset risk by selling a portion of what we have
-  let coinsToSell = totalCoinsAvailable.multipliedBy(coinRatio)
+  let coinsToSell = new BigNumber(balance[currency].available).dividedBy(2)
 
   // This will probably never happen...
   if (coinsToSell.isGreaterThan(productData.base_max_size)) {
@@ -105,6 +84,8 @@ const sell = async (product, price, balance, productData) => {
 
   // Check to make sure it's above the min and below the max allowed trade quantities
   if (coinsToSell.isGreaterThanOrEqualTo(productData.base_min_size)) {
+    positions[product].buy = true
+
     // Execute the trade
     // Probably poll to make sure the order wasn't rejected somehow
     // Round down at 8 decimal places
@@ -114,8 +95,6 @@ const sell = async (product, price, balance, productData) => {
       product_id: product,
       post_only: true
     }
-
-    positions[product].buy = true
 
     return gdax.sell(params)
   }
