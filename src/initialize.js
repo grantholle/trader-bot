@@ -4,13 +4,8 @@ const client = require('./gdaxClient')
 const logger = require('./logger')
 const { products, granularities, periods } = require('./config')
 const { clone } = require('lodash')
-const accountBalances = require('./accounts')
 const BigNumber = require('bignumber.js')
 const { percentChange, getIndicators, highLowSpread } = require('./utilities')
-
-const smallerPeriod = Math.min(...periods)
-const smallerGranularity = Math.min(...granularities)
-const largerGranularity = Math.max(...granularities)
 
 module.exports = async () => {
   const priceTracker = {}

@@ -1,7 +1,7 @@
 'use strict'
 
 const { WebsocketClient } = require('gdax')
-const { products, sandbox } = require('./config')
+const { products } = require('./config')
 const auth = {
   key: process.env.GDAX_KEY,
   secret: process.env.GDAX_SECRET,
