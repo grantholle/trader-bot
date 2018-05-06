@@ -13,7 +13,7 @@ const logOptions = {
       maxFiles: 5,
       tailable: true,
       json: false,
-      timestamp: () => moment().format('HH:mm:ss')
+      timestamp: () => moment().format('MM/DD HH:mm:ss')
     })
   ]
 }
