@@ -3,6 +3,8 @@
 const logger = require('../logger')
 const { periods, granularities } = require('../config')
 const { percentChange } = require('../utilities')
+const smallerPeriod = Math.min(...periods)
+const smallerGranularity = Math.min(...granularities)
 
 module.exports = (message, productData) => {
   let belowLower = true
@@ -17,6 +19,11 @@ module.exports = (message, productData) => {
       const upperChange = percentChange(ind.bb.upper, message.price)
 
       logger.silly(`${message.product_id}: ${'0'.repeat(2 - min.length)}${min}min BB${period} lower (${ind.bb.lower.toFixed(2)}): ${lowerChange.toFixed(2)}%, upper (${ind.bb.upper.toFixed(2)}): ${upperChange.toFixed(2)}%`)
+
+      // The faster granularity and period are too quick to really give accurate movements
+      if (granularity === smallerGranularity && period === smallerPeriod) {
+        continue
+      }
 
       if (lowerChange.isPositive()) {
         belowLower = false

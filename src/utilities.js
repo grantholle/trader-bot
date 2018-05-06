@@ -17,12 +17,12 @@ exports.getIndicators = (product, granularity, values) => {
     indicators[period] = {}
 
     // Calculate the period's EMA
-    // const avg = ema({ period, values })
-    // indicators[period].ema = avg.map(i => new BigNumber(i.toString()))
-    // logger.debug(`${product}: EMA${period} for last ${granularity / 60}min candle: ${last(indicators[period].ema).toFixed(2)}`)
+    const avg = ema({ period, values })
+    indicators[period].ema = avg.map(i => new BigNumber(i.toString()))
+    logger.debug(`${product}: EMA${period} for last ${granularity / 60}min candle: ${last(indicators[period].ema).toFixed(2)}`)
 
     // Calculate the period's BB
-    const bb = bollingerbands({ period, values, stdDev: 2.25 })
+    const bb = bollingerbands({ period, values, stdDev: 2.1 })
     indicators[period].bb = last(bb)
     logger.debug(`${product}: BB${period} ${granularity / 60}min lower: ${indicators[period].bb.lower.toFixed(2)}, upper: ${indicators[period].bb.upper.toFixed(2)}`)
 

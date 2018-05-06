@@ -7,14 +7,15 @@ const { last } = require('lodash')
 const { percentChange } = require('../utilities')
 
 const smallerPeriod = Math.min(...periods)
+const largerPeriod = Math.max(...periods)
 const smallerGranularity = Math.min(...granularities)
 const largerGranularity = Math.max(...granularities)
 
 module.exports = (message, productData) => {
-  let priceBelowOtherEmas = true
-  let priceAboveOtherEmas = true
-  let priceAboveSlowEmas = true
-  let priceBelowSlowEmas = true
+  let priceBelowEmas = true
+  let priceAboveEmas = true
+  let fastAboveSlow = true
+  let fastBelowSlow = true
 
   for (const granularity of granularities) {
     // Check if the current price is above/below the ema's
@@ -26,48 +27,28 @@ module.exports = (message, productData) => {
 
       logger.silly(`${message.product_id}: ${'0'.repeat(2 - min.length)}${min}min EMA${period} (${lastEma.toFixed(2)}): ${percent.toFixed(2)}%`)
 
-      // Only count the slower 3/4 averages for the "other ema" check
-      if (granularity === smallerGranularity && period === smallerPeriod) {
-        continue
-      }
-
-      // Do a check on the larger/slower ema
-      if (granularity === largerGranularity && message.price.isLessThan(lastEma)) {
-        priceAboveSlowEmas = false
-      } else if (granularity === largerGranularity && message.price.isGreaterThan(lastEma)) {
-        priceBelowSlowEmas = false
-      }
-
       if (percent.isPositive()) {
-        priceBelowOtherEmas = false
+        priceBelowEmas = false
       } else {
-        priceAboveOtherEmas = false
+        priceAboveEmas = false
       }
     }
   }
 
   // Holds the 2 emas of the smaller granularity
-  const smallIndicators = productData[smallerGranularity].indicators
-  // const priceAboveSmallEma = percentChange(last(smallIndicators[smallerPeriod].ema), message.price).isPositive()
+  const smallGranularitySmallEma = new BigNumber(last(productData[smallerGranularity].indicators[smallerPeriod].ema))
+  const smallGranularityLargeEma = new BigNumber(last(productData[smallerGranularity].indicators[largerPeriod].ema))
+  const largeGranularitySmallEma = new BigNumber(last(productData[largerGranularity].indicators[smallerPeriod].ema))
+  const largeGranularityLargeEma = new BigNumber(last(productData[largerGranularity].indicators[largerPeriod].ema))
 
-  // If the previous smaller period candle closed above the faster ema
-  const lastCandleClosedUp = percentChange(last(smallIndicators[smallerPeriod].ema), last(productData[smallerGranularity].allCandles).close).isPositive()
+  fastAboveSlow = smallGranularitySmallEma.isGreaterThanOrEqualTo(smallGranularityLargeEma) &&
+    largeGranularitySmallEma.isGreaterThanOrEqualTo(largeGranularityLargeEma)
 
-  // The faster ema crossed above or is about to cross above the slow ema
-  // Possibly indicating the start of an upward trend or currently in an up trend
-  const fastCrossedAboveSlow = smallIndicators.emaPercentDifference.isGreaterThanOrEqualTo(-0.075)
+  fastBelowSlow = !fastAboveSlow
 
-  // The faster ema crossed below or is about to cross below the slow ema
-  // Possibly indicating the start of a downward trend or currently in a down trend
-  const fastCrossedBelowSlow = smallIndicators.emaPercentDifference.isLessThanOrEqualTo(0.075)
-
-  // This isn't necessarily a good indicator if it jumps rapidly
-  // NOT USED NOW
-  const smallEmaHasPositiveGain = smallIndicators[smallerPeriod].averageGain.isGreaterThanOrEqualTo(smallIndicators[smallerPeriod].averageLoss)
-
-  if (lastCandleClosedUp && priceBelowSlowEmas && smallIndicators.fastJustCrossedAboveSlow) {
+  if (priceBelowEmas && fastBelowSlow) {
     return 'buy'
-  } else if (!lastCandleClosedUp && priceAboveSlowEmas && smallIndicators.fastJustCrossedBelowSlow) {
+  } else if (priceAboveEmas && fastAboveSlow) {
     return 'sell'
   }
 
