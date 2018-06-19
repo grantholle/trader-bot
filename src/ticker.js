@@ -24,9 +24,9 @@ module.exports = (message, priceTracker) => {
     return
   }
 
-  if (lastTickerPrice) {
-    priceLogger.info(`${message.product_id}: ${message.price.isGreaterThan(lastTickerPrice) ? '▲' : '▼'} ${message.price.toFixed(2)}`)
-  }
+  // if (lastTickerPrice) {
+  //   priceLogger.info(`${message.product_id}: ${message.price.isGreaterThan(lastTickerPrice) ? '▲' : '▼'} ${message.price.toFixed(2)}`)
+  // }
 
   const productData = priceTracker[message.product_id]
 
