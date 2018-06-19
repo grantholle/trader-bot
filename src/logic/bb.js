@@ -6,6 +6,12 @@ const { percentChange } = require('../utilities')
 const smallerPeriod = Math.min(...periods)
 const smallerGranularity = Math.min(...granularities)
 
+// let previousPriceBelowCount = 0
+// let previousPriceAboveCount = 0
+// let lastCount = 0
+// let previousPriceBelow = false
+// let previousPriceAbove = false
+
 module.exports = (message, productData) => {
   let belowLower = true
   let aboveUpper = true
