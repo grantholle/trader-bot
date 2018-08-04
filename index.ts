@@ -1,20 +1,16 @@
-'use strict'
+import gdaxWebsocket from './src/gdaxWebsocketClient'
+import init from './src/initialize'
+import tickerHandler from './src/ticker'
+import logger from './src/logger'
+import { products, granularities, liveTrade } from './src/config'
 
-// Load env variables
-require('dotenv').config()
-
-const gdaxWebsocket = require('./src/gdaxWebsocketClient')
-const init = require('./src/initialize')
-const tickerHandler = require('./src/ticker')
-const logger = require('./src/logger')
-const { products, granularities, liveTrade } = require('./src/config')
 let reconnectAttempts = 0
 let priceTracker = {}
 
-logger.info(`Trading is${liveTrade ? '' : ' NOT'} live`)
+logger.info(`Trading ${liveTrade ? 'IS' : 'IS NOT'} live`)
 
 gdaxWebsocket.on('open', async () => {
-  logger.info(`Connected to ${gdaxWebsocket.websocketURI}`)
+  logger.info(`Socket is connected`)
   let heartbeatTimeout
   const heartbeatReconnectDelay = 15000
 
@@ -28,7 +24,7 @@ gdaxWebsocket.on('open', async () => {
   }
 
   // Only attach the listener after we've been initialized
-  gdaxWebsocket.on('message', message => {
+  gdaxWebsocket.on('message', (message: any) => {
     // Listen for hearbeats, reconnect if we lose the heartbeat after 15 seconds
     if (message.type === 'heartbeat') {
       clearTimeout(heartbeatTimeout)

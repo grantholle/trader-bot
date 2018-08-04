@@ -1,16 +1,14 @@
-'use strict'
+import logger from './logger'
+import { periods } from '../config'
+import BigNumber from 'bignumber.js'
+import { ema, bollingerbands } from 'technicalindicators'
+import { last } from 'lodash'
 
-const logger = require('./logger')
-const { periods } = require('./config')
-const BigNumber = require('bignumber.js')
-const { ema, averagegain, averageloss, macd, bollingerbands } = require('technicalindicators')
-const { last, nth } = require('lodash')
+const highLowSpread = candle => candle.high.minus(candle.low).toFixed(2)
 
-exports.highLowSpread = candle => candle.high.minus(candle.low).toFixed(2)
+const candleChange = candle => candle.close.minus(candle.open).toFixed(2)
 
-exports.candleChange = candle => candle.close.minus(candle.open).toFixed(2)
-
-exports.getIndicators = (product, granularity, values) => {
+const getIndicators = (product, granularity, values) => {
   const indicators = {}
 
   for (const period of periods) {
@@ -45,13 +43,13 @@ exports.getIndicators = (product, granularity, values) => {
 
   // indicators.smallerEmaBelowLarger = last(indicators[smallerPeriod].ema).isLessThan(last(indicators[largerPeriod].ema))
   // indicators.largerEmaBelowSmaller = !indicators.smallerEmaBelowLarger
-  // indicators.emaPercentDifference = exports.percentChange(last(indicators[largerPeriod].ema), last(indicators[smallerPeriod].ema))
-  // indicators.previousEmaPercentDifference = exports.percentChange(nth(indicators[largerPeriod].ema, -2), nth(indicators[smallerPeriod].ema, -2))
+  // indicators.emaPercentDifference = percentChange(last(indicators[largerPeriod].ema), last(indicators[smallerPeriod].ema))
+  // indicators.previousEmaPercentDifference = percentChange(nth(indicators[largerPeriod].ema, -2), nth(indicators[smallerPeriod].ema, -2))
 
   return indicators
 }
 
-exports.getBigNumber = value => {
+const getBigNumber = value => {
   if (BigNumber.isBigNumber(value)) {
     return value
   }
@@ -59,25 +57,17 @@ exports.getBigNumber = value => {
   return new BigNumber(value.toString())
 }
 
-exports.percentChange = (previous, current) => {
-  previous = exports.getBigNumber(previous)
-  current = exports.getBigNumber(current)
+const percentChange = (previous, current) => {
+  previous = getBigNumber(previous)
+  current = getBigNumber(current)
 
   return current.minus(previous).dividedBy(previous).multipliedBy(100)
 }
 
-exports.switchSide = (currentSide, product) => {
-  if (currentSide === 'buy') {
-    currentSide = 'sell'
-  } else {
-    currentSide = 'buy'
-  }
-
-  logger.verbose(`${product}: Changing side to ${currentSide}`)
-
-  return currentSide
-}
-
-exports.oppositeSide = (side) => {
-  return side === 'buy' ? 'sell' : 'buy'
+export {
+  highLowSpread,
+  candleChange,
+  getIndicators,
+  getBigNumber,
+  percentChange
 }
