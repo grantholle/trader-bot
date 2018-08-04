@@ -8,19 +8,28 @@
     "url": "https://github.com/grantholle/trader-bot"
   },
   "scripts": {
-    "style": "./node_modules/.bin/standard --fix"
+    "style": "./node_modules/.bin/standard --fix",
+    "type-check": "tsc --noEmit",
+    "build": "tsc --emitDeclarationOnly && babel src --out-dir lib --extensions \".ts\"",
+    "start": "node lib/index.js"
   },
   "dependencies": {
     "bignumber.js": "^6.0.0",
     "dotenv": "^5.0.1",
-    "gdax": "^0.6.0",
-    "lodash": "^4.17.5",
-    "moment": "^2.22.0",
+    "gdax": "^0.8.0",
+    "lodash": "^4.17.10",
+    "moment": "^2.22.2",
     "pushbullet": "^2.2.0",
-    "technicalindicators": "^1.1.8",
-    "winston": "^2.4.1"
+    "technicalindicators": "^1.1.11",
+    "ts-node": "^7.0.0",
+    "typescript": "^2.9.2",
+    "winston": "^2.4.3"
   },
   "devDependencies": {
+    "@types/dotenv": "^4.0.3",
+    "@types/lodash": "^4.14.116",
+    "@types/node": "^10.5.6",
+    "@types/winston": "^2.3.9",
     "standard": "^11.0.1"
   }
 }
