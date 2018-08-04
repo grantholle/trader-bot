@@ -1,8 +1,6 @@
-'use strict'
-
-const winston = require('winston')
-const moment = require('moment')
-const p = require('path')
+import winston from 'winston'
+import moment from 'moment'
+import p from 'path'
 
 const logOptions = {
   level: process.env.LOG_LEVEL,
@@ -25,4 +23,4 @@ const logOptions = {
   colorize: true
 }
 
-module.exports = new winston.Logger(logOptions)
+export default new winston.Logger(logOptions)
