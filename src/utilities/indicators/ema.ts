@@ -1,2 +1,0 @@
-import { periods } from '../../config'
-
