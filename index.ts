@@ -1,41 +1,36 @@
-import gdaxWebsocket from './src/gdaxWebsocketClient'
-import init from './src/initialize'
-import tickerHandler from './src/ticker'
-import logger from './src/logger'
+import coinbaseWebsocket from './src/clients/coinbaseWebsocketClient'
+import logger from './src/utilities/logger'
 import { products, granularities, liveTrade } from './src/config'
+import Bot from './src/bot'
 
 let reconnectAttempts = 0
-let priceTracker = {}
+let bot = new Bot()
 
 logger.info(`Trading ${liveTrade ? 'IS' : 'IS NOT'} live`)
 
-gdaxWebsocket.on('open', async () => {
+coinbaseWebsocket.on('open', async () => {
   logger.info(`Socket is connected`)
+
   let heartbeatTimeout
   const heartbeatReconnectDelay = 15000
 
-  heartbeatTimeout = setTimeout(gdaxWebsocket.connect, heartbeatReconnectDelay)
+  await bot.getProductData(products)
 
-  try {
-    // Initialize by getting historical prices and starting intervals
-    priceTracker = await init()
-  } catch (err) {
-    logger.error(`Failed initializing`, err)
-  }
+  heartbeatTimeout = setTimeout(coinbaseWebsocket.connect, heartbeatReconnectDelay)
 
   // Only attach the listener after we've been initialized
-  gdaxWebsocket.on('message', (message: any) => {
+  coinbaseWebsocket.on('message', (message: any) => {
     // Listen for hearbeats, reconnect if we lose the heartbeat after 15 seconds
     if (message.type === 'heartbeat') {
       clearTimeout(heartbeatTimeout)
-      heartbeatTimeout = setTimeout(gdaxWebsocket.connect, heartbeatReconnectDelay)
+      heartbeatTimeout = setTimeout(coinbaseWebsocket.connect, heartbeatReconnectDelay)
     }
 
-    tickerHandler(message, priceTracker)
+    bot.handleTick(message)
   })
 })
 
-gdaxWebsocket.on('close', () => {
+coinbaseWebsocket.on('close', () => {
   logger.info(`Websocket connection closed.`)
 
   // Stop all the intervals
@@ -48,11 +43,11 @@ gdaxWebsocket.on('close', () => {
   }
 })
 
-gdaxWebsocket.on('error', err => {
+coinbaseWebsocket.on('error', err => {
   logger.error(`WebSocket error: ${err.message}`)
 
   // Attempt to reconnect after 30 seconds up to 4 times
   if (++reconnectAttempts < 5) {
-    setTimeout(gdaxWebsocket.connect, 30000)
+    setTimeout(coinbaseWebsocket.connect, 30000)
   }
 })
