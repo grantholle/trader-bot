@@ -18,23 +18,23 @@ export default class Product {
     this.quoteIncrement = new BigNumber(productData.quote_increment)
   }
 
-  debug (message: string, obj?: object) {
+  debug (message: string, obj?: any) {
     logger.debug(`${this.id}: ${message}`, obj)
   }
 
-  info (message: string, obj?: object) {
+  info (message: string, obj?: any) {
     logger.info(`${this.id}: ${message}`, obj)
   }
 
-  silly (message: string, obj?: object) {
+  silly (message: string, obj?: any) {
     logger.silly(`${this.id}: ${message}`, obj)
   }
 
-  error (message: string, obj?: object) {
+  error (message: string, obj?: any) {
     logger.error(`${this.id}: ${message}`, obj)
   }
 
-  verbose (message: string, obj?: object) {
+  verbose (message: string, obj?: any) {
     logger.verbose(`${this.id}: ${message}`, obj)
   }
 }
