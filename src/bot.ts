@@ -1,11 +1,13 @@
 import coinbaseClient from './clients/coinbaseClient'
 import coinbaseWebsocket from './clients/coinbaseWebsocketClient'
 import Product from './product'
+import ProductManager from './productManager'
 import logger from './utilities/logger'
 import { clone } from 'lodash'
+import { granularities } from './config'
 
 export default class Bot {
-  public products: Array<Product>
+  public productManagers: object = {}
   private lastTickerPrice: BigNumber
 
   async getProductData (products: Array<string>): Promise<void> {
@@ -13,7 +15,12 @@ export default class Bot {
 
     for (const product of cbProducts) {
       if (products.indexOf(product.id) !== -1) {
-        this.products.push(new Product(product))
+        const p = new Product(product)
+        this.productManagers[product.id] = {}
+
+        for (const granularity of granularities) {
+          const manager = new ProductManager(p)
+        }
       }
     }
   }
