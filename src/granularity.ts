@@ -1,36 +1,35 @@
 import Candle from './candle'
-import Indicator from './indicator'
+import Indicator from './indicators/indicator'
 
-export default class Granularity {
+export default class CandleGranularity {
+  public milliseconds: number
   public seconds: number
   public minutes: number
   public candles: Array<Candle>
-  public currentCandle: Candle
-  public indicators: Array<Indicator>
+  public closes: Array<number>
+  public interval: NodeJS.Timer
   private candleCacheSize: number
-  private interval: NodeJS.Timer
 
   constructor (seconds: number) {
     this.seconds = seconds
     this.minutes = seconds / 60
+    this.milliseconds = seconds * 1000
     this.candleCacheSize = parseFloat(process.env.PRICE_CACHE_SIZE)
   }
 
-  trimCandles (): void {
-    if (this.candleCacheSize < this.candles.length) {
-      this.candles.splice(0, this.candles.length - this.candleCacheSize)
+  addCandle (candle: Candle, trim: boolean = false) {
+    this.candles.push(candle)
+    this.closes.push(candle.close.toNumber())
+
+    if (trim) {
+      this.trimCandles(this.candles)
     }
   }
 
-  startInterval (): void {
-    this.interval = setInterval(() => {
-      this.candles.push(this.currentCandle)
-      this.trimCandles()
-
-      for (const indicator of this.indicators) {
-        indicator.analyze()
-      }
-    }, this.seconds * 1000)
+  trimCandles (candles: Array<any>): void {
+    if (this.candleCacheSize < candles.length) {
+      candles.splice(0, candles.length - this.candleCacheSize)
+    }
   }
 
   clearInterval (): void {
