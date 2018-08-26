@@ -12,16 +12,13 @@ Create a `.env` file with the following properties (has examples):
 
 ```
 # gdax api credentials
-GDAX_KEY=
-GDAX_SECRET=
-GDAX_PASSPHRASE=
-
-# comma separate list of products you wish to trade
-# GDAX_PRODUCTS=LTC-USD
-GDAX_PRODUCTS=BTC-USD,LTC-USD
+KEY=
+SECRET=
+PASSPHRASE=
+PRODUCTS=BTC-USD
 
 # see granularity at https://docs.gdax.com/#get-historic-rates
-GDAX_GRANULARITIES=60,900
+GRANULARITIES=60,900
 
 # how many candles to store per granularity
 PRICE_CACHE_SIZE=400
