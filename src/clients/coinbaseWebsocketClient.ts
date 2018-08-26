@@ -1,10 +1,10 @@
 import { WebsocketClient } from 'gdax'
-import { products } from '../config'
+import { product } from '../config'
 
 const auth = {
-  key: process.env.GDAX_KEY,
-  secret: process.env.GDAX_SECRET,
-  passphrase: process.env.GDAX_PASSPHRASE
+  key: process.env.KEY,
+  secret: process.env.SECRET,
+  passphrase: process.env.PASSPHRASE
 }
 
 const options = {
@@ -12,6 +12,6 @@ const options = {
 }
 
 const connectionUrl = 'wss://ws-feed.pro.coinbase.com'
-const client = new WebsocketClient(products, connectionUrl, auth, options)
+const client = new WebsocketClient([product], connectionUrl, auth, options)
 
 export default client
