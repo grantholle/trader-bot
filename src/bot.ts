@@ -83,4 +83,10 @@ export default class Bot {
       }, granularity.milliseconds)
     }
   }
+
+  clearIntervals (): void {
+    for (const granularity of this.granularities) {
+      granularity.clearInterval()
+    }
+  }
 }
