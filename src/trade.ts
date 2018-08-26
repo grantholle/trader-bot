@@ -1,7 +1,7 @@
 import BigNumber from 'bignumber.js'
 import coinbase from './clients/coinbaseClient'
 import logger from './utilities/logger'
-import { Product } from './product';
+import Product from './product'
 
 /**
  * Tracks all data for a trade

@@ -13,7 +13,7 @@ export default class Candle {
     this.low = new BigNumber(low)
   }
 
-  tick (price: any) {
+  tick (price: number) {
     this.close = new BigNumber(price)
 
     if (this.close.isLessThan(this.low)) {
