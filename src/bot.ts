@@ -1,29 +1,35 @@
 import coinbaseClient from './clients/coinbaseClient'
 import Product from './product'
 import { clone } from 'lodash'
-// import { granularities } from './config'
 import Candle from './candle'
 import CandleGranularity from './granularity'
-import ProductManager from './productManager'
 
 export default class Bot {
-  public productManager: ProductManager
+  public ready: Promise<any>
+  public product: Product
   public granularities: Array<CandleGranularity>
-  private lastTickerPrice: BigNumber
+  private currentCandle: Candle
 
-  constructor (granularities: Array<number>) {
+  constructor (product: string, granularities: Array<number>) {
     this.granularities = granularities.map(g => new CandleGranularity(g))
-  }
 
-  async getProductData (products: Array<string>): Promise<void> {
-    const coinbaseProducts = await coinbaseClient.getProducts()
+    // Handle the asynch stuff with ready so we know when it's safe
+    // to start handling messages and executing trades
+    this.ready = new Promise(async (resolve, reject) => {
+      try {
+        // Get the product data from Coinbase
+        const coinbaseProducts = await coinbaseClient.getProducts()
+        this.product = new Product(coinbaseProducts.find(p => p.id === product))
 
-    for (const product of coinbaseProducts) {
-      if (products.indexOf(product.id) !== -1) {
-        this.productManager = new ProductManager(new Product(product), this.granularities)
-        break
+        // Get all previous candles from now
+        await this.getHistoricalCandles()
+
+        // We're ready to start doing stuff
+        resolve(undefined)
+      } catch (err) {
+        reject(err)
       }
-    }
+    })
   }
 
   handleTick (message: any): void {
@@ -32,63 +38,49 @@ export default class Bot {
       return
     }
 
-    message.price = new BigNumber(message.price)
-    const product = this.productManagers[message.product_id]
-
-    product.silly(`Trade: ${message.side} @ $${message.price.toFixed(2)}`)
-
-    // If it was the same price as last time, don't continue
-    if (this.lastTickerPrice && message.price.isEqualTo(this.lastTickerPrice)) {
-      return
-    }
-
-    // if (lastTickerPrice) {
-    //   priceLogger.info(`${message.product_id}: ${message.price.isGreaterThan(lastTickerPrice) ? '▲' : '▼'} ${message.price.toFixed(2)}`)
-    // }
+    this.product.silly(`Trade: ${message.side} @ $${message.price}`)
 
     // Set the current candle price data for each granularity
-    for (const granularity of granularities) {
-      const candle = productData[granularity].currentCandle
-
-      candle.close = message.price
-
-      // Set the high and low for the candle
-      if (message.price.isLessThan(candle.low)) {
-        candle.low = message.price
-      }
-
-      if (message.price.isGreaterThan(candle.high)) {
-        candle.high = message.price
-      }
+    for (const granularity of this.granularities) {
+      granularity.updateCurrentCandle(message.price)
     }
 
-    this.lastTickerPrice = clone(message.price)
-
     // The module that handles the logic to make trades
-    traderLogic(message, productData)
+    // traderLogic(message, productData)
   }
 
-  async getHistoricalCandles (product: Product): Promise<void> {
-    for (const granularity of product.granularities) {
-      product.verbose(`Getting historical data at every ${granularity.minutes} minutes`)
+  async getHistoricalCandles (): Promise<void> {
+    for (const granularity of this.granularities) {
+      this.product.verbose(`Getting historical data at every ${granularity.minutes} minutes`)
 
       try {
-        const res = await coinbaseClient.getProductHistoricRates(product.id, { granularity: granularity.seconds })
+        const res = await coinbaseClient.getProductHistoricRates(this.product.id, { granularity: granularity.seconds })
 
         // We get the results newest -> oldest,
         // so reverse that so it's oldest -> newest
         for (let i = res.length - 1; i >= 0; --i) {
           const p = res[i]
           const candle = new Candle(p[3], p[1], p[2], p[4])
-          granularity.candles.push(candle)
+          granularity.addCandle(candle)
         }
 
-        granularity.trimCandles()
+        granularity.trimCandles(granularity.candles)
 
-        product.debug(`Total historical prices @ ${granularity.minutes} minutes: ${granularity.candles.length}`)
+        this.product.debug(`Total historical prices @ ${granularity.minutes} minutes: ${granularity.candles.length}`)
       } catch (err) {
-        product.error(`Failed getting historical pricing data`, err)
+        this.product.error(`Failed getting historical pricing data`, err)
       }
+    }
+  }
+
+  startIntervals (): void {
+    for (const granularity of this.granularities) {
+      granularity.interval = setInterval(() => {
+        // Add the candle to the set, trimming if necessary
+        granularity.addCandle(clone(this.currentCandle), true)
+
+        // Recalculate the technical indicators
+      }, granularity.milliseconds)
     }
   }
 }
