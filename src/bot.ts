@@ -7,8 +7,8 @@ import CandleGranularity from './granularity'
 export default class Bot {
   public ready: Promise<any>
   public product: Product
-  public granularities: Array<CandleGranularity>
   private currentCandle: Candle
+  public granularities: Array<CandleGranularity>
 
   constructor (product: string, granularities: Array<number>) {
     this.granularities = granularities.map(g => new CandleGranularity(g))
@@ -19,7 +19,7 @@ export default class Bot {
       try {
         // Get the product data from Coinbase
         const coinbaseProducts = await coinbaseClient.getProducts()
-        this.product = new Product(coinbaseProducts.find(p => p.id === product))
+        this.product = new Product(coinbaseProducts.find((p: any) => p.id === product))
 
         // Get all previous candles from now
         await this.getHistoricalCandles()

@@ -1,5 +1,4 @@
 import logger from './logger'
-import { periods } from '../config'
 import BigNumber from 'bignumber.js'
 import { ema, bollingerbands } from 'technicalindicators'
 import { last } from 'lodash'
@@ -11,18 +10,18 @@ const candleChange = candle => candle.close.minus(candle.open).toFixed(2)
 const getIndicators = (product, granularity, values) => {
   const indicators = {}
 
-  for (const period of periods) {
-    indicators[period] = {}
+  // for (const period of periods) {
+  //   indicators[period] = {}
 
-    // Calculate the period's EMA
-    const avg = ema({ period, values })
-    indicators[period].ema = avg.map(i => new BigNumber(i.toString()))
-    logger.debug(`${product}: EMA${period} for last ${granularity / 60}min candle: ${last(indicators[period].ema).toFixed(2)}`)
+  //   // Calculate the period's EMA
+  //   const avg = ema({ period, values })
+  //   indicators[period].ema = avg.map(i => new BigNumber(i.toString()))
+  //   logger.debug(`${product}: EMA${period} for last ${granularity / 60}min candle: ${last(indicators[period].ema).toFixed(2)}`)
 
-    // Calculate the period's BB
-    const bb = bollingerbands({ period, values, stdDev: 2.1 })
-    indicators[period].bb = last(bb)
-    logger.debug(`${product}: BB${period} ${granularity / 60}min lower: ${indicators[period].bb.lower.toFixed(2)}, upper: ${indicators[period].bb.upper.toFixed(2)}`)
+  //   // Calculate the period's BB
+  //   const bb = bollingerbands({ period, values, stdDev: 2.1 })
+  //   indicators[period].bb = last(bb)
+  //   logger.debug(`${product}: BB${period} ${granularity / 60}min lower: ${indicators[period].bb.lower.toFixed(2)}, upper: ${indicators[period].bb.upper.toFixed(2)}`)
 
     // Average gain
     // indicators[period].averageGain = new BigNumber(last(averagegain({ period, values })).toString())
@@ -31,7 +30,7 @@ const getIndicators = (product, granularity, values) => {
     // Average loss
     // indicators[period].averageLoss = new BigNumber(last(averageloss({ period, values })).toString())
     // logger.debug(`${product}: Average loss period ${period} for last ${granularity / 60}min candle: $${indicators[period].averageLoss.toFixed(2)}`)
-  }
+  // }
 
   // Calculate the macd
   // const lastMacd = last(macd({ values, fastPeriod: smallerPeriod, slowPeriod: largerPeriod, signalPeriod: 9 }))

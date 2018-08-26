@@ -10,8 +10,7 @@
   "scripts": {
     "style": "./node_modules/.bin/standard --fix",
     "type-check": "tsc --noEmit",
-    "build": "tsc --emitDeclarationOnly && babel src --out-dir lib --extensions \".ts\"",
-    "start": "node lib/index.js"
+    "start": "./node_modules/.bin/ts-node index.ts"
   },
   "dependencies": {
     "bignumber.js": "^6.0.0",

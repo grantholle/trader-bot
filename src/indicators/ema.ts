@@ -8,7 +8,7 @@ export default class Ema implements Indicator {
   private fasterPeriod: number = 12
   private slowerPeriod: number = 26
 
-  analyze (values: Array<number>, product: Product, granularity: Granularity) {
+  calculate (values: Array<number>, product: Product, granularity: Granularity) {
     const fasterEma = ema({ period: this.fasterPeriod, values }).map(i => new BigNumber(i))
     const lastFastAvg = last(fasterEma)
 
