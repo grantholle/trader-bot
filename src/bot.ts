@@ -38,7 +38,9 @@ export default class Bot {
       return
     }
 
-    this.product.silly(`Trade: ${message.side} @ $${message.price}`)
+    const price = new BigNumber(message.price)
+
+    this.product.silly(`Trade: ${message.side} @ $${price.toFixed(2)}`)
 
     // Set the current candle price data for each granularity
     for (const granularity of this.granularities) {
