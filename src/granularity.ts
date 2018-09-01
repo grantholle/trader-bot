@@ -6,9 +6,9 @@ export default class CandleGranularity {
   public milliseconds: number
   public seconds: number
   public minutes: number
-  public candles: Array<Candle>
+  public candles: Array<Candle> = []
   public currentCandle: Candle
-  public closes: Array<number>
+  public closes: Array<number> = []
   public interval: NodeJS.Timer
   private candleCacheSize: number
 
