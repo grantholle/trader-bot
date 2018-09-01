@@ -1,8 +1,6 @@
-'use strict'
-
-const winston = require('winston')
-const moment = require('moment')
-const p = require('path')
+import winston from 'winston'
+import moment from 'moment'
+import p from 'path'
 
 const logOptions = {
   level: 'info',
@@ -18,4 +16,4 @@ const logOptions = {
   ]
 }
 
-module.exports = new winston.Logger(logOptions)
+export default new winston.Logger(logOptions)
