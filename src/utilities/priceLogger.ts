@@ -6,7 +6,7 @@ const logOptions = {
   level: 'info',
   transports: [
     new winston.transports.File({
-      filename: p.join(__dirname, '..', 'logs', 'prices.log'),
+      filename: p.join(__dirname, '..', '..', 'logs', 'prices.log'),
       maxsize: 1000000,
       maxFiles: 5,
       tailable: true,

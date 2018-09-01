@@ -11,7 +11,7 @@ const logOptions = {
       timestamp: () => moment().format('MM/DD/YYYY HH:mm:ss:SSS')
     }),
     new winston.transports.File({
-      filename: p.join(__dirname, '..', 'logs', 'trader.log'),
+      filename: p.join(__dirname, '..', '..', 'logs', 'trader.log'),
       maxsize: 1024000,
       maxFiles: 15,
       showLevel: true,
