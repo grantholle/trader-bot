@@ -1,14 +1,12 @@
-'use strict'
-
-const PushBullet = require('pushbullet')
-const logger = require('./logger')
+import PushBullet from 'pushbullet'
+import logger from './logger'
 let pusher = false
 
 try {
   pusher = new PushBullet(process.env.PUSHBULLET_KEY)
 } catch (e) { }
 
-module.exports = {
+export default {
   buy (msg) {
     if (!pusher) {
       return
