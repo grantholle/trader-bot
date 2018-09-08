@@ -1,6 +1,6 @@
 import PushBullet from 'pushbullet'
 import logger from './logger'
-let pusher = false
+let pusher = null
 
 try {
   pusher = new PushBullet(process.env.PUSHBULLET_KEY)
