@@ -10,6 +10,7 @@ export default class CandleGranularity {
   public currentCandle: Candle
   public closes: Array<number> = []
   public interval: NodeJS.Timer
+  public indicators: any = {}
   private candleCacheSize: number
 
   constructor (seconds: number) {
@@ -44,6 +45,10 @@ export default class CandleGranularity {
     }
 
     this.currentCandle.tick(price)
+  }
+
+  setIndicator (type: string, value: any): void {
+    this.indicators[type] = value
   }
 
   clearInterval (): void {

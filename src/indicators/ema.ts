@@ -1,23 +1,18 @@
 import Indicator from './indicator'
 import { ema } from 'technicalindicators'
-import Product from '../product'
-import Granularity from '../granularity'
-import { last } from 'lodash'
 
 export default class Ema implements Indicator {
-  private fasterPeriod: number = 12
-  private slowerPeriod: number = 26
+  calculate (values: Array<number>) {
+    const fasterPeriod: number = 12
+    const slowerPeriod: number = 26
 
-  calculate (values: Array<number>, product: Product, granularity: Granularity) {
-    const fasterEma = ema({ period: this.fasterPeriod, values }).map(i => new BigNumber(i))
-    const lastFastAvg = last(fasterEma)
+    const faster = ema({ period: fasterPeriod, values }).map(i => new BigNumber(i))
+    const slower = ema({ period: slowerPeriod, values }).map(i => new BigNumber(i))
 
-    const slowerEma = ema({ period: this.slowerPeriod, values }).map(i => new BigNumber(i))
-    const lastSlowAvg = last(slowerEma)
-
-    product.verbose(`${granularity.minutes}min EMA${this.fasterPeriod}: ${lastFastAvg.toFixed(2)}; EMA${this.slowerPeriod}: ${lastSlowAvg.toFixed(2)}`)
-
-    return lastFastAvg.isGreaterThan(lastSlowAvg) ? 'sell' : 'buy'
+    return {
+      faster,
+      slower
+    }
   }
 }
 

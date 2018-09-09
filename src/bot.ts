@@ -3,6 +3,7 @@ import Product from './product'
 import { clone } from 'lodash'
 import Candle from './candle'
 import CandleGranularity from './granularity'
+import indicators from './indicators'
 
 export default class Bot {
   public ready: Promise<any>
@@ -82,6 +83,10 @@ export default class Bot {
         granularity.addCandle(clone(this.currentCandle), true)
 
         // Recalculate the technical indicators
+        for (const obj of Object.keys(indicators)) {
+          const indicator = new indicators[obj]()
+          granularity.setIndicator(obj, indicator.calculate(granularity.closes))
+        }
       }, granularity.milliseconds)
     }
   }
