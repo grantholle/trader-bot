@@ -8,6 +8,15 @@ logger.info(`Trading ${liveTrade ? 'IS' : 'IS NOT'} live`)
 let reconnectAttempts = 0
 const bot = new Bot(product, granularities)
 
+let errorHandler = (err: Error) => {
+  logger.error(`WebSocket error: ${err.message}`)
+
+  // Attempt to reconnect after 30 seconds up to 4 times
+  if (++reconnectAttempts < 5) {
+    setTimeout(coinbaseWebsocket.connect, 30000)
+  }
+}
+
 coinbaseWebsocket.on('open', async () => {
   logger.info(`Socket is connected`)
 
@@ -17,16 +26,22 @@ coinbaseWebsocket.on('open', async () => {
   heartbeatTimeout = setTimeout(coinbaseWebsocket.connect, heartbeatReconnectDelay)
 
   bot.ready.then(() => {
-    // Only attach the listener after we've been initialized
-    coinbaseWebsocket.on('message', (message: any) => {
-      // Listen for hearbeats, reconnect if we lose the heartbeat after 15 seconds
-      if (message.type === 'heartbeat') {
-        clearTimeout(heartbeatTimeout)
-        heartbeatTimeout = setTimeout(coinbaseWebsocket.connect, heartbeatReconnectDelay)
-      }
+    bot.startIntervals()
 
-      bot.handleTick(message)
-    })
+    try {
+      // Only attach the listener after we've been initialized
+      coinbaseWebsocket.on('message', (message: any) => {
+        // Listen for hearbeats, reconnect if we lose the heartbeat after 15 seconds
+        if (message.type === 'heartbeat') {
+          clearTimeout(heartbeatTimeout)
+          heartbeatTimeout = setTimeout(coinbaseWebsocket.connect, heartbeatReconnectDelay)
+        }
+
+        bot.handleTick(message)
+      })
+    } catch (err) {
+      errorHandler(err)
+    }
   })
 })
 
@@ -37,11 +52,4 @@ coinbaseWebsocket.on('close', () => {
   bot.clearIntervals()
 })
 
-coinbaseWebsocket.on('error', (err: Error) => {
-  logger.error(`WebSocket error: ${err.message}`)
-
-  // Attempt to reconnect after 30 seconds up to 4 times
-  if (++reconnectAttempts < 5) {
-    setTimeout(coinbaseWebsocket.connect, 30000)
-  }
-})
+coinbaseWebsocket.on('error', errorHandler)

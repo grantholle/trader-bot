@@ -4,6 +4,7 @@ import { clone } from 'lodash'
 import Candle from './candle'
 import CandleGranularity from './granularity'
 import indicators from './indicators'
+import BigNumber from 'bignumber.js'
 
 export default class Bot {
   public ready: Promise<any>
@@ -80,12 +81,13 @@ export default class Bot {
     for (const granularity of this.granularities) {
       granularity.interval = setInterval(() => {
         // Add the candle to the set, trimming if necessary
-        granularity.addCandle(clone(this.currentCandle), true)
+        granularity.addCandle(granularity.currentCandle, true)
 
         // Recalculate the technical indicators
         for (const obj of Object.keys(indicators)) {
           const indicator = new indicators[obj]()
           granularity.setIndicator(obj, indicator.calculate(granularity.closes))
+          this.product.verbose(indicator.message)
         }
       }, granularity.milliseconds)
     }
