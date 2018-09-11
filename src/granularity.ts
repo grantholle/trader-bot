@@ -6,7 +6,7 @@ export default class CandleGranularity {
   public seconds: number
   public minutes: number
   public candles: Array<Candle> = []
-  public currentCandle: Candle
+  public currentCandle: Candle = null
   public closes: Array<number> = []
   public interval: NodeJS.Timer
   public indicators: any = {}
@@ -19,7 +19,7 @@ export default class CandleGranularity {
     this.candleCacheSize = parseFloat(process.env.PRICE_CACHE_SIZE)
   }
 
-  addCandle (candle: Candle, trim: boolean = false) {
+  addCandle (candle: Candle, trim: boolean = false): void {
     if (!candle) {
       const lastClose = last(this.candles).close.toNumber()
       candle = new Candle(lastClose, lastClose, lastClose, lastClose)
@@ -33,7 +33,7 @@ export default class CandleGranularity {
       this.trimCandles(this.closes)
     }
 
-    candle = null
+    this.currentCandle = null
   }
 
   trimCandles (candles: Array<any>): void {
