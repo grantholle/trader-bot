@@ -1,4 +1,5 @@
 import BigNumber from 'bignumber.js'
+import { clone } from 'lodash'
 
 export default class Candle {
   public open: BigNumber
@@ -6,11 +7,11 @@ export default class Candle {
   public high: BigNumber
   public low: BigNumber
 
-  constructor (open = 0, low = 0, high = 0, close = 0) {
+  constructor (open = 0, low = null, high = null, close = null) {
     this.open = new BigNumber(open)
-    this.close = new BigNumber(close)
-    this.high = new BigNumber(high)
-    this.low = new BigNumber(low)
+    this.close = close !== null ? new BigNumber(close) : clone(this.open)
+    this.high = high !== null ? new BigNumber(high) : clone(this.open)
+    this.low = low !== null ? new BigNumber(low) : clone(this.open)
   }
 
   tick (price: number) {
