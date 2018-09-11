@@ -4,8 +4,8 @@ import Macd from './macd'
 import Rsi from './rsi'
 
 export default {
-  Ema,
+  // Ema,
   BollingerBands,
-  Macd,
-  Rsi
+  // Macd,
+  // Rsi
 }

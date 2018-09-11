@@ -4,13 +4,14 @@ import { clone } from 'lodash'
 import Candle from './candle'
 import CandleGranularity from './granularity'
 import indicators from './indicators'
+import strategies from './strategies'
 import BigNumber from 'bignumber.js'
 
 export default class Bot {
   public ready: Promise<any>
   public product: Product
-  private currentCandle: Candle
   public granularities: Array<CandleGranularity>
+  private lastPrice: BigNumber
 
   constructor (product: string, granularities: Array<number>) {
     this.granularities = granularities.map(g => new CandleGranularity(g))
@@ -41,16 +42,48 @@ export default class Bot {
     }
 
     const price = new BigNumber(message.price)
+    let action = null
 
     this.product.silly(`Trade: ${message.side} @ $${price.toFixed(2)}`)
+
+    if (this.lastPrice && price.isEqualTo(this.lastPrice)) {
+      return
+    }
 
     // Set the current candle price data for each granularity
     for (const granularity of this.granularities) {
       granularity.updateCurrentCandle(message.price)
+
+      // Recalculate indicators based on the assumption that
+      // this price could be the closing price
+      for (const indicatorName of Object.keys(indicators)) {
+        const indicator = new indicators[indicatorName]()
+        const strategy = new strategies[indicatorName]()
+        const results = indicator.calculate([...granularity.closes, price.toNumber()])
+
+        const side = strategy.analyze(this.product, results, price)
+
+        if (side) {
+          // Trade
+          this.product.info(`Excute ${side} trade when price hit $${price.toFixed(2)}`)
+        }
+      }
     }
 
     // The module that handles the logic to make trades
     // traderLogic(message, productData)
+    this.lastPrice = clone(price)
+  }
+
+  async cancelOrderBySide (side) {
+    const orders = await coinbaseClient.getOrders({ status: 'open', product_id: this.product.id })
+
+    for (const order of orders) {
+      if (order.side === side) {
+        await coinbaseClient.cancelOrder(order.id)
+        this.product.verbose(`Canceled ${side} order for ${order.size} @ $${order.price}`)
+      }
+    }
   }
 
   async getHistoricalCandles (): Promise<void> {

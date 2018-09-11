@@ -7,8 +7,8 @@ export default class BollingerBands implements Indicator {
   public message: string
 
   calculate (values: Array<number>) {
-    const period: number = 14
-    const stdDev: number = 2.3
+    const period: number = 12
+    const stdDev: number = 2.4
 
     const bands = bollingerbands({
       period,

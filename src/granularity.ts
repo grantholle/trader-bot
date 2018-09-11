@@ -1,6 +1,5 @@
 import Candle from './candle'
-import Indicator from './indicators/indicator'
-import { clone } from 'lodash'
+import { clone, last } from 'lodash'
 
 export default class CandleGranularity {
   public milliseconds: number
@@ -21,6 +20,11 @@ export default class CandleGranularity {
   }
 
   addCandle (candle: Candle, trim: boolean = false) {
+    if (!candle) {
+      const lastClose = last(this.candles).close.toNumber()
+      candle = new Candle(lastClose, lastClose, lastClose, lastClose)
+    }
+
     this.candles.push(clone(candle))
     this.closes.push(candle.close.toNumber())
 
@@ -29,7 +33,7 @@ export default class CandleGranularity {
       this.trimCandles(this.closes)
     }
 
-    this.currentCandle = null
+    candle = null
   }
 
   trimCandles (candles: Array<any>): void {
@@ -47,8 +51,16 @@ export default class CandleGranularity {
     this.currentCandle.tick(price)
   }
 
+  getCurrentCandle (): Candle {
+    return this.currentCandle
+  }
+
   setIndicator (type: string, value: any): void {
     this.indicators[type] = value
+  }
+
+  getIndicator (type: string): any {
+    return this.indicators[type]
   }
 
   clearInterval (): void {
