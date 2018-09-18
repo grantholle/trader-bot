@@ -55,6 +55,10 @@ export default class CandleGranularity {
     return last(this.candles).close
   }
 
+  getLastCandle (): Candle {
+    return last(this.candles)
+  }
+
   getCurrentCandle (): Candle {
     return this.currentCandle
   }

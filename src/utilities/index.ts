@@ -23,6 +23,10 @@ const percentChange = (previous, current) => {
   return current.minus(previous).dividedBy(previous).multipliedBy(100)
 }
 
+const formatPrice = (price: BigNumber): string => {
+  return `$${price.toFixed(2)}`
+}
+
 export {
   highLowSpread,
   candleChange,

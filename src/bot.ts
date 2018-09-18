@@ -101,6 +101,8 @@ export default class Bot {
         // Add the candle to the set, trimming if necessary
         granularity.addCandle(granularity.currentCandle, true)
 
+        this.product.verbose(granularity.getLastCandle().toString())
+
         const price = granularity.getLastClose()
 
         // Calculate the technical indicators

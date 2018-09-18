@@ -1,5 +1,6 @@
 import BigNumber from 'bignumber.js'
 import { clone } from 'lodash'
+import { formatPrice, percentChange } from './utilities'
 
 export default class Candle {
   public open: BigNumber
@@ -24,5 +25,9 @@ export default class Candle {
     if (this.close.isGreaterThan(this.high)) {
       this.high = new BigNumber(price)
     }
+  }
+
+  toString (): string {
+    return `Open: ${formatPrice(this.close)}; Close: ${formatPrice(this.close)}; High: ${formatPrice(this.high)}; Low: ${formatPrice(this.low)}; Spread: ${percentChange(this.low, this.high).toFixed(3)}%; Percent change: ${percentChange(this.open, this.close).toFixed(3)}%`
   }
 }
