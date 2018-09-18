@@ -31,6 +31,6 @@ export default class Candle {
   }
 
   toString (): string {
-    return `Open: ${formatPrice(this.close)}; Close: ${formatPrice(this.close)}; High: ${formatPrice(this.high)}; Low: ${formatPrice(this.low)}; Spread: ${percentChange(this.low, this.high).toFixed(3)}%; Percent change: ${percentChange(this.open, this.close).toFixed(3)}%`
+    return `Open: ${formatPrice(this.open)}; Close: ${formatPrice(this.close)}; High: ${formatPrice(this.high)}; Low: ${formatPrice(this.low)}; Spread: ${percentChange(this.low, this.high).toFixed(3)}%; Percent change: ${percentChange(this.open, this.close).toFixed(3)}%`
   }
 }
