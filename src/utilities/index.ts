@@ -31,5 +31,6 @@ export {
   highLowSpread,
   candleChange,
   getBigNumber,
-  percentChange
+  percentChange,
+  formatPrice
 }
