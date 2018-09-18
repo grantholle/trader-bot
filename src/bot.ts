@@ -53,21 +53,6 @@ export default class Bot {
     // Set the current candle price data for each granularity
     for (const granularity of this.granularities) {
       granularity.updateCurrentCandle(message.price)
-
-      // Recalculate indicators based on the assumption that
-      // this price could be the closing price
-      for (const indicatorName of Object.keys(indicators)) {
-        const indicator = new indicators[indicatorName]()
-        const strategy = new strategies[indicatorName]()
-        const results = indicator.calculate([...granularity.closes, price.toNumber()])
-
-        const side = strategy.analyze(this.product, results, price)
-
-        if (side) {
-          // Trade
-          this.product.info(`Excute ${side} trade when price hit $${price.toFixed(2)}`)
-        }
-      }
     }
 
     // The module that handles the logic to make trades
@@ -116,11 +101,22 @@ export default class Bot {
         // Add the candle to the set, trimming if necessary
         granularity.addCandle(granularity.currentCandle, true)
 
-        // Recalculate the technical indicators
-        for (const obj of Object.keys(indicators)) {
-          const indicator = new indicators[obj]()
-          granularity.setIndicator(obj, indicator.calculate(granularity.closes))
-          this.product.verbose(indicator.message)
+        const price = granularity.getLastClose()
+
+        // Calculate the technical indicators
+        for (const indicatorName of Object.keys(indicators)) {
+          const indicator = new indicators[indicatorName]()
+          const results = indicator.calculate(granularity.closes)
+
+          granularity.setIndicator(indicatorName, results)
+
+          const strategy = new strategies[indicatorName]()
+          const side = strategy.analyze(this.product, results, price)
+
+          if (side) {
+            // Trade
+            this.product.info(`Excute ${side} trade when price hit $${price.toFixed(2)}`)
+          }
         }
       }, granularity.milliseconds)
     }

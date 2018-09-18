@@ -51,6 +51,10 @@ export default class CandleGranularity {
     this.currentCandle.tick(price)
   }
 
+  getLastClose (): BigNumber {
+    return last(this.candles).close
+  }
+
   getCurrentCandle (): Candle {
     return this.currentCandle
   }
