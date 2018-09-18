@@ -1,6 +1,5 @@
 import coinbaseClient from './clients/coinbaseClient'
 import Product from './product'
-import { clone } from 'lodash'
 import Candle from './candle'
 import CandleGranularity from './granularity'
 import indicators from './indicators'
@@ -42,9 +41,8 @@ export default class Bot {
     }
 
     const price = new BigNumber(message.price)
-    let action = null
 
-    this.product.silly(`Trade: ${message.side} @ $${price.toFixed(2)}`)
+    this.product.verbose(`Trade: ${message.side} @ $${price.toFixed(2)}`)
 
     if (this.lastPrice && price.isEqualTo(this.lastPrice)) {
       return
@@ -57,7 +55,7 @@ export default class Bot {
 
     // The module that handles the logic to make trades
     // traderLogic(message, productData)
-    this.lastPrice = clone(price)
+    this.lastPrice = new BigNumber(message.price)
   }
 
   async cancelOrderBySide (side) {

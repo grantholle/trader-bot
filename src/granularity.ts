@@ -1,5 +1,5 @@
 import Candle from './candle'
-import { clone, last } from 'lodash'
+import { last } from 'lodash'
 
 export default class CandleGranularity {
   public milliseconds: number
@@ -25,7 +25,7 @@ export default class CandleGranularity {
       candle = new Candle(lastClose, lastClose, lastClose, lastClose)
     }
 
-    this.candles.push(clone(candle))
+    this.candles.push(candle.copy())
     this.closes.push(candle.close.toNumber())
 
     if (trim) {
