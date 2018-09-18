@@ -5,6 +5,7 @@ import CandleGranularity from './granularity'
 import indicators from './indicators'
 import strategies from './strategies'
 import BigNumber from 'bignumber.js'
+import { formatPrice } from './utilities'
 
 export default class Bot {
   public ready: Promise<any>
@@ -42,7 +43,7 @@ export default class Bot {
 
     const price = new BigNumber(message.price)
 
-    this.product.verbose(`Trade: ${message.side} @ $${price.toFixed(2)}`)
+    this.product.verbose(`Trade: ${message.side} @ ${formatPrice(price)}`)
 
     if (this.lastPrice && price.isEqualTo(this.lastPrice)) {
       return
@@ -115,7 +116,7 @@ export default class Bot {
 
           if (side) {
             // Trade
-            this.product.info(`Excute ${side} trade when price hit $${price.toFixed(2)}`)
+            this.product.info(`Excute ${side} trade when price hit ${formatPrice(price)}`)
           }
         }
       }, granularity.milliseconds)
