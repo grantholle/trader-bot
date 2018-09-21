@@ -103,6 +103,7 @@ export default class Bot {
         this.product.verbose(granularity.getLastCandle().toString())
 
         const price = granularity.getLastClose()
+        const sides = []
 
         // Calculate the technical indicators
         for (const indicatorName of Object.keys(indicators)) {
@@ -112,13 +113,18 @@ export default class Bot {
           granularity.setIndicator(indicatorName, results)
 
           const strategy = new strategies[indicatorName]()
-          const side = strategy.analyze(this.product, results, price)
-
-          if (side) {
-            // Trade
-            this.product.info(`Excute ${side} trade when price hit ${formatPrice(price)}`)
-          }
+          sides.push(strategy.analyze(this.product, results, price))
         }
+
+        const allSidesAgree = sides.every((val, i, arr) => val === arr[0])
+
+        if (allSidesAgree) {
+          const side = allSidesAgree[0]
+
+          // Trade
+          this.product.info(`Excute ${side} trade when price hit ${formatPrice(price)}`)
+        }
+
       }, granularity.milliseconds)
     }
   }
