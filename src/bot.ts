@@ -121,8 +121,10 @@ export default class Bot {
         if (allSidesAgree) {
           const side = allSidesAgree[0]
 
-          // Trade
-          this.product.info(`Excute ${side} trade when price hit ${formatPrice(price)}`)
+          if (side !== null) {
+            // Trade
+            this.product.info(`Excute ${side} trade when price hit ${formatPrice(price)}`)
+          }
         }
 
       }, granularity.milliseconds)
