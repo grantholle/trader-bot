@@ -29,7 +29,7 @@ export default class Position {
   /**
    * Places a buy order, opening a position
    */
-  async buy (amount: BigNumber, price: BigNumber): Promise<void> {
+  async enter (amount: BigNumber, price: BigNumber): Promise<void> {
     this.price = price
     this.formattedPrice = formatPrice(price)
     this.amount = amount
@@ -72,7 +72,7 @@ export default class Position {
    *
    * @param price Price at which to sell this position
    */
-  async sell (price: BigNumber): Promise<void> {
+  async exit (price: BigNumber): Promise<void> {
     if (!this.filledSize.isGreaterThan(0)) {
       this.product.info(`Attempting to sell, but buy order still not filled, cancelling order.`)
       await this.cancel()
