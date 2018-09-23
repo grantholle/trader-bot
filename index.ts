@@ -6,7 +6,7 @@ import Bot from './src/bot'
 logger.info(`Trading ${liveTrade ? 'IS' : 'IS NOT'} live`)
 
 let reconnectAttempts = 0
-const bot = new Bot(product, granularities)
+const bot = new Bot(product, granularities, liveTrade)
 
 let errorHandler = (err: Error) => {
   logger.error(`WebSocket error: ${err.message}`)
