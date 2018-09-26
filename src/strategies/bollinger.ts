@@ -14,8 +14,8 @@ export default class implements Strategy {
     const lowerChange = percentChange(lower, price)
     const upperChange = percentChange(upper, price)
 
-    product.verbose(`Last candle and lower BB change: ${lowerChange.toFixed(4)}%; BB $${lower.toFixed(2)}, Last candle close $${price.toFixed(2)}`)
     product.verbose(`Last candle and upper BB change: ${upperChange.toFixed(4)}%; BB $${upper.toFixed(2)}, Last candle close $${price.toFixed(2)}`)
+    product.verbose(`Last candle and lower BB change: ${lowerChange.toFixed(4)}%; BB $${lower.toFixed(2)}, Last candle close $${price.toFixed(2)}`)
 
     if (lowerChange.isNegative()) {
       return 'buy'
