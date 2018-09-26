@@ -110,7 +110,6 @@ export default class Bot {
 
         this.product.verbose(granularity.getLastCandle().toString())
 
-        const price = granularity.getLastClose()
         const sides = []
 
         // Calculate the technical indicators
@@ -121,7 +120,7 @@ export default class Bot {
           granularity.setIndicator(indicatorName, results)
 
           const strategy = new strategies[indicatorName]()
-          sides.push(strategy.analyze(this.product, results, price))
+          sides.push(strategy.analyze(this.product, results, granularity))
         }
 
         const allSidesAgree = sides.every((val, i, arr) => val === arr[0])
