@@ -13,7 +13,7 @@ export default class Bot {
   public product: Product
   public granularities: Array<CandleGranularity>
   private lastPrice: BigNumber
-  private positions: Array<Position>
+  private positions: Array<Position> = []
   private trend: string = null
   private triggerBuy: boolean = false
   private triggerSell: boolean = false
