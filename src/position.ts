@@ -31,6 +31,7 @@ export default class Position {
    */
   async enter (amount: BigNumber, price: BigNumber): Promise<void> {
     this.price = price
+    this.stopPrice = price.multipliedBy(.998)
     this.formattedPrice = formatPrice(price)
     this.amount = amount
 
