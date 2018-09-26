@@ -162,7 +162,7 @@ export default class Bot {
     if (buy) {
       const position = new Position(this.product, this.live)
       const buyPrice = price.minus(this.product.quoteIncrement)
-      const amount = await this.getBuyAmount(buyPrice)
+      const amount = this.live ? await this.getBuyAmount(buyPrice) : new BigNumber(1)
 
       await position.enter(amount, buyPrice)
 
