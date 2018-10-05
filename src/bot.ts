@@ -14,9 +14,9 @@ export default class Bot {
   public granularities: Array<CandleGranularity>
   private lastPrice: BigNumber
   private positions: Array<Position> = []
-  private trend: string = null
   private triggerBuy: boolean = false
   private triggerSell: boolean = false
+  private triggerTrade: boolean = false
   private live: boolean
 
   constructor (product: string, granularities: Array<number>, live: boolean = false) {
@@ -52,19 +52,18 @@ export default class Bot {
 
     this.product.verbose(`Trade: ${message.side} @ ${formatPrice(price)}`)
 
-    if (this.lastPrice && price.isEqualTo(this.lastPrice)) {
-      return
-    }
-
     // Set the current candle price data for each granularity
     for (const granularity of this.granularities) {
       granularity.updateCurrentCandle(message.price)
     }
 
-    if (this.triggerBuy || this.triggerSell) {
+    if (this.lastPrice && price.isEqualTo(this.lastPrice)) {
+      return
+    }
+
+    if (this.triggerTrade) {
       await this.trade(price)
-      this.triggerBuy = false
-      this.triggerSell = false
+      this.triggerTrade = false
     }
 
     // Determine if this has hit the stop loss price for any position
@@ -105,6 +104,8 @@ export default class Bot {
   startIntervals (): void {
     for (const granularity of this.granularities) {
       granularity.interval = setInterval(async () => {
+        const closedLower = granularity.getLastClose().isLessThanOrEqualTo(granularity.currentCandle.close)
+
         // Add the candle to the set, trimming if necessary
         granularity.addCandle(granularity.currentCandle, true)
 
@@ -123,22 +124,22 @@ export default class Bot {
           sides.push(strategy.analyze(this.product, results, granularity))
         }
 
-        const allSidesAgree = sides.every((val, i, arr) => val === arr[0])
+        const allSidesAgree = sides.every((val, i, arr) => val === arr[0] && val !== null)
 
         if (allSidesAgree) {
-          const side = allSidesAgree[0]
+          const side = sides[0]
+          this.product.debug(`All sides agree to ${side}`)
 
-          if (side !== null) {
-            this.trend = side
-          } else if (this.trend !== null) {
-            // This is the first candle not following a previous trend, make a move
-            this.triggerBuy = this.trend === 'buy'
-            this.triggerSell = this.trend === 'sell'
-
-            this.trend = null
-          }
-        } else {
-          this.trend = null
+          this.triggerBuy = side === 'buy'
+          this.triggerSell = side === 'sell'
+        } else if ((this.triggerBuy && !closedLower) || (this.triggerSell && closedLower)) {
+          // If last close there was a buy trigger
+          // and this candle didn't close lower
+          // or
+          // If the last close was a sell
+          // and this candle didn't close higher
+          // the trigger a trade
+          this.triggerTrade = true
         }
       }, granularity.milliseconds)
     }
@@ -171,6 +172,9 @@ export default class Bot {
       const sellPrice = price.plus(this.product.quoteIncrement)
       this.positions[0].exit(sellPrice)
     }
+
+    this.triggerBuy = false
+    this.triggerSell = false
   }
 
   async getBuyAmount (price: BigNumber): Promise<BigNumber> {
