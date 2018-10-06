@@ -193,7 +193,18 @@ export default class Bot {
   }
 
   checkPositions (): void {
-    this.positions = this.positions.filter(p => !p.positionFinished)
+    const newPositions = []
+
+    for (const position of this.positions) {
+      if (position.positionFinished) {
+        position.getProfit()
+        continue
+      }
+
+      newPositions.push(position)
+    }
+
+    this.positions = newPositions
   }
 
   checkStopLosses (price: BigNumber): void {
