@@ -209,7 +209,8 @@ export default class Bot {
 
   checkStopLosses (price: BigNumber): void {
     for (const position of this.positions) {
-      if (price.isLessThanOrEqualTo(position.stopPrice)) {
+      if (price.isLessThan(position.stopPrice)) {
+        this.product.info(`Stop loss price met for position, exiting at ${formatPrice(price)} for a loss`)
         position.exit(price.minus(this.product.quoteIncrement))
         break
       }
