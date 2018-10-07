@@ -212,7 +212,6 @@ export default class Bot {
       if (price.isLessThan(position.stopPrice)) {
         this.product.info(`Stop loss price met for position, exiting at ${formatPrice(price)} for a loss`)
         position.exit(price.minus(this.product.quoteIncrement))
-        break
       }
     }
   }
