@@ -67,7 +67,7 @@ export default class Bot {
     }
 
     // Determine if this has hit the stop loss price for any position
-    // this.checkStopLosses(price)
+    this.checkStopLosses(price)
 
     // Clear out any finished positions
     this.checkPositions()
