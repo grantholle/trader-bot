@@ -13,8 +13,6 @@ export default class implements Strategy {
 
     product.verbose(`Last candle and EMA change: ${change.toFixed(4)}%; EMA ${formatPrice(ema)}, Last candle close ${formatPrice(price)}`)
 
-
-
     return null
   }
 }
