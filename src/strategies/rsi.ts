@@ -8,6 +8,8 @@ export default class implements Strategy {
   analyze (product: Product, indicatorData: any, granularity: CandleGranularity): any {
     const lastRsi: BigNumber = last(indicatorData)
 
+    product.verbose(`Last RSI ${lastRsi.toFixed(3)}`)
+
     if (lastRsi.isGreaterThan(70)) {
       return 'sell'
     }
