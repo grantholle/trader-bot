@@ -148,6 +148,8 @@ export default class Bot {
   async trade (price: BigNumber): Promise<void> {
     const buy = this.triggerBuy
     const sell = this.triggerSell
+    this.triggerBuy = false
+    this.triggerSell = false
 
     // We're only going to have 2 open positions at a time
     if (this.positions.length === 2 && buy) {
@@ -172,9 +174,6 @@ export default class Bot {
       const sellPrice = price.plus(this.product.quoteIncrement)
       this.positions[0].exit(sellPrice)
     }
-
-    this.triggerBuy = false
-    this.triggerSell = false
   }
 
   async getBuyAmount (price: BigNumber): Promise<BigNumber> {
