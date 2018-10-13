@@ -7,6 +7,7 @@ import strategies from './strategies'
 import BigNumber from 'bignumber.js'
 import { formatPrice } from './utilities'
 import Position from './position'
+import moment, { Moment } from 'moment'
 
 export default class Bot {
   public ready: Promise<any>
@@ -18,6 +19,7 @@ export default class Bot {
   private triggerSell: boolean = false
   private triggerTrade: boolean = false
   private live: boolean
+  private lastTradeTime: Moment = null
 
   constructor (product: string, granularities: Array<number>, live: boolean = false) {
     this.granularities = granularities.map(g => new CandleGranularity(g))
@@ -150,6 +152,13 @@ export default class Bot {
     const sell = this.triggerSell
     this.triggerBuy = false
     this.triggerSell = false
+
+    // Don't make a trade within 5 minutes of the last one
+    if (this.lastTradeTime && moment().diff(this.lastTradeTime, 'minutes') < 4) {
+      return
+    }
+
+    this.lastTradeTime = moment()
 
     // We're only going to have 2 open positions at a time
     if (this.positions.length === 2 && buy) {
