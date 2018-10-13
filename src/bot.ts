@@ -128,6 +128,8 @@ export default class Bot {
 
         const allSidesAgree = sides.every((val, i, arr) => val === arr[0] && val !== null)
 
+        this.product.debug(`triggerBuy: ${this.triggerBuy}, triggerSell: ${this.triggerSell}, closed lower: ${closingLower}`)
+
         if (allSidesAgree && !this.triggerBuy && !this.triggerSell) {
           const side = sides[0]
           this.product.debug(`All sides agree to ${side}`)
