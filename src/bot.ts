@@ -106,7 +106,7 @@ export default class Bot {
   startIntervals (): void {
     for (const granularity of this.granularities) {
       granularity.interval = setInterval(async () => {
-        const closedLower = granularity.getLastClose().isLessThanOrEqualTo(granularity.currentCandle.close)
+        const closingLower = granularity.currentCandle.close.isLessThanOrEqualTo(granularity.getLastClose())
 
         // Add the candle to the set, trimming if necessary
         granularity.addCandle(granularity.currentCandle, true)
@@ -134,7 +134,7 @@ export default class Bot {
 
           this.triggerBuy = side === 'buy'
           this.triggerSell = side === 'sell'
-        } else if ((this.triggerBuy && !closedLower) || (this.triggerSell && closedLower)) {
+        } else if ((this.triggerBuy && !closingLower) || (this.triggerSell && closingLower)) {
           // If last close there was a buy trigger
           // and this candle didn't close lower
           // or
