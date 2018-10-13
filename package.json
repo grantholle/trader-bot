@@ -10,7 +10,9 @@
   "scripts": {
     "style": "./node_modules/.bin/standard --fix",
     "type-check": "tsc --noEmit",
-    "start": "./node_modules/.bin/ts-node index.ts"
+    "start": "./node_modules/.bin/ts-node index.ts",
+    "daemon": "pm2 start npm --name bot -- start",
+    "stop": "pm2 stop bot"
   },
   "dependencies": {
     "bignumber.js": "^6.0.0",
