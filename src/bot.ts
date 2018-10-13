@@ -5,7 +5,7 @@ import CandleGranularity from './granularity'
 import indicators from './indicators'
 import strategies from './strategies'
 import BigNumber from 'bignumber.js'
-import { formatPrice } from './utilities'
+import { formatPrice, percentChange } from './utilities'
 import Position from './position'
 import moment, { Moment } from 'moment'
 
@@ -219,6 +219,8 @@ export default class Bot {
 
   checkStopLosses (price: BigNumber): void {
     for (const position of this.positions) {
+      this.product.debug(`Position/price percent change: ${percentChange(position.price, price).toFixed(2)}%`)
+
       if (price.isLessThan(position.stopPrice)) {
         this.product.info(`Stop loss price met for position, exiting at ${formatPrice(price)} for a loss`)
         position.exit(price.minus(this.product.quoteIncrement))
