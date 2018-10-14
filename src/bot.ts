@@ -125,8 +125,10 @@ export default class Bot {
 
           granularity.setIndicator(indicatorName, results)
 
-          const strategy = new strategies[indicatorName]()
-          sides.push(strategy.analyze(this.product, results, granularity))
+          if (strategies[indicatorName]) {
+            const strategy = new strategies[indicatorName]()
+            sides.push(strategy.analyze(this.product, results, granularity))
+          }
         }
 
         const allSidesAgree = sides.every((val, i, arr) => val === arr[0] && val !== null)
