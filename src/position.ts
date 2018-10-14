@@ -19,6 +19,7 @@ export default class Position {
   public product: Product
   public filledSize: BigNumber
   public sellPrice: BigNumber
+  public profitPercent: BigNumber = null
   private pollDelay: number = 5000
 
   constructor (product: Product, live: boolean = false) {
@@ -173,8 +174,8 @@ export default class Position {
   }
 
   getProfit (): void {
-    const profitPercent = percentChange(this.price.multipliedBy(this.amount), this.sellPrice.multipliedBy(this.amount))
+    this.profitPercent = percentChange(this.price.multipliedBy(this.amount), this.sellPrice.multipliedBy(this.amount))
 
-    this.product.info(`Position profit ${profitPercent.toFixed(2)}%: bought ${this.amount} coins @ ${formatPrice(this.price)}, sold @ ${formatPrice(this.sellPrice)}`)
+    this.product.info(`Position profit ${this.profitPercent.toFixed(2)}%: bought ${this.amount} coins @ ${formatPrice(this.price)}, sold @ ${formatPrice(this.sellPrice)}`)
   }
 }

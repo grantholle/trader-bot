@@ -20,6 +20,7 @@ export default class Bot {
   private triggerTrade: boolean = false
   private live: boolean
   private lastTradeTime: Moment = null
+  private percentChanges: Array<BigNumber> = []
 
   constructor (product: string, granularities: Array<number>, live: boolean = false) {
     this.granularities = granularities.map(g => new CandleGranularity(g))
@@ -104,6 +105,8 @@ export default class Bot {
   }
 
   startIntervals (): void {
+    this.startDailyTracking()
+
     for (const granularity of this.granularities) {
       granularity.interval = setInterval(async () => {
         const closingLower = granularity.currentCandle.close.isLessThanOrEqualTo(granularity.getLastClose())
@@ -209,6 +212,7 @@ export default class Bot {
     for (const position of this.positions) {
       if (position.positionFinished) {
         position.getProfit()
+        this.percentChanges.push(position.profitPercent)
         continue
       }
 
@@ -227,6 +231,26 @@ export default class Bot {
         position.exit(price.minus(this.product.quoteIncrement))
       }
     }
+  }
+
+  startDailyTracking (): void {
+    setInterval(() => {
+      const max = this.percentChanges.reduce((maxValue, percent) => {
+        if (percent.isGreaterThan(maxValue)) {
+          return percent
+        }
+
+        return maxValue
+      }, new BigNumber(0))
+
+      const avg = this.percentChanges.reduce((total, percent) => {
+        return total.plus(percent)
+      }, new BigNumber(0)).dividedBy(this.percentChanges.length)
+
+      this.product.info(`24 hour stats: ${max.toFixed(2)}% max; ${avg.toFixed(2)}% average`)
+
+      this.percentChanges = []
+    }, 1000 * 60 * 60 * 24)
   }
 
   clearIntervals (): void {
