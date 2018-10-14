@@ -4,6 +4,6 @@ import Rsi from './rsi'
 
 export default {
   // Ema,
-  // BollingerBands,
-  Rsi
+  BollingerBands
+  // Rsi
 }
