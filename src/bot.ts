@@ -122,6 +122,7 @@ export default class Bot {
         for (const indicatorName of Object.keys(indicators)) {
           const indicator = new indicators[indicatorName]()
           const results = indicator.calculate(granularity.closes)
+          this.product.verbose(indicator.message)
 
           granularity.setIndicator(indicatorName, results)
 
