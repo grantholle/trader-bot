@@ -109,10 +109,10 @@ export default class Bot {
 
     for (const granularity of this.granularities) {
       granularity.interval = setInterval(async () => {
-        const closingLower = granularity.currentCandle.close.isLessThanOrEqualTo(granularity.getLastClose())
-
         // Add the candle to the set, trimming if necessary
         granularity.addCandle(granularity.currentCandle, true)
+
+        const closingLower = granularity.getLastClose().isLessThanOrEqualTo(granularity.candles[granularity.candles.length - 2].close)
 
         this.product.verbose(granularity.getLastCandle().toString())
 
