@@ -128,7 +128,7 @@ export default class Bot {
 
         const allSidesAgree = sides.every((val, i, arr) => val === arr[0] && val !== null)
 
-        this.product.debug(`triggerBuy: ${this.triggerBuy}, triggerSell: ${this.triggerSell}, closed lower: ${closingLower}`)
+        this.product.debug(`triggerBuy: ${this.triggerBuy}, triggerSell: ${this.triggerSell}, triggerTrade: ${this.triggerTrade} closed lower: ${closingLower}`)
 
         if (allSidesAgree && !this.triggerBuy && !this.triggerSell) {
           const side = sides[0]
@@ -157,6 +157,7 @@ export default class Bot {
 
     // Don't make a trade within 5 minutes of the last one
     if (this.lastTradeTime && moment().diff(this.lastTradeTime, 'minutes') < 4) {
+      this.product.verbose(`Not enough time has passed to trade again: ${moment().diff(this.lastTradeTime, 'minutes')} minutes`)
       return
     }
 
