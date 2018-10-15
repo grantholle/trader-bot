@@ -64,16 +64,16 @@ export default class Bot {
       return
     }
 
-    if (this.triggerTrade) {
-      await this.trade(price)
-      this.triggerTrade = false
-    }
-
     // Determine if this has hit the stop loss price for any position
     this.checkStopLosses(price)
 
     // Clear out any finished positions
     this.checkPositions()
+
+    if (this.triggerTrade) {
+      await this.trade(price)
+      this.triggerTrade = false
+    }
 
     // The module that handles the logic to make trades
     // traderLogic(message, productData)
