@@ -1,33 +1,37 @@
 import BigNumber from 'bignumber.js'
 import { formatPrice, percentChange } from './utilities'
+import { cloneDeep, last, first, sortBy } from 'lodash'
 
 export default class Candle {
   public open: BigNumber
   public close: BigNumber
   public high: BigNumber
   public low: BigNumber
+  public prices: Array<BigNumber>
 
-  constructor (open = 0, low = null, high = null, close = null) {
-    this.open = new BigNumber(open)
-    this.close = new BigNumber(close !== null ? close : open)
-    this.high = new BigNumber(high !== null ? high : open)
-    this.low = new BigNumber(low !== null ? low : open)
-  }
+  constructor (price: BigNumber = null) {
+    this.prices = []
 
-  tick (price: number) {
-    this.close = new BigNumber(price)
-
-    if (this.close.isLessThan(this.low)) {
-      this.low = new BigNumber(price)
-    }
-
-    if (this.close.isGreaterThan(this.high)) {
-      this.high = new BigNumber(price)
+    if (price) {
+      this.open = cloneDeep(price)
+      this.tick(price)
     }
   }
 
-  copy () {
-    return new Candle(this.open.toNumber(), this.low.toNumber(), this.high.toNumber(), this.close.toNumber())
+  tick (price: BigNumber): void {
+    this.prices.push(price)
+  }
+
+  finish () {
+    this.close = cloneDeep(last(this.prices))
+    const sorted = sortBy(this.prices, p => p.toNumber())
+
+    this.high = new BigNumber(last(sorted))
+    this.low = new BigNumber(first(sorted))
+  }
+
+  copy (): Candle {
+    return cloneDeep(this)
   }
 
   toString (): string {
