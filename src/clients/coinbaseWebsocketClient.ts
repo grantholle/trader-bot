@@ -8,7 +8,7 @@ const auth = {
 }
 
 const options = {
-  channels: ['ticker']
+  channels: ['user', 'ticker']
 }
 
 const connectionUrl = 'wss://ws-feed.pro.coinbase.com'
