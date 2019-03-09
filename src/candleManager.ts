@@ -1,5 +1,6 @@
 import Candle from './candle'
 import BigNumber from 'bignumber.js'
+import logger from './utilities/logger'
 
 export default class CandleManager {
   public candles: Array<Candle> = []
@@ -28,6 +29,7 @@ export default class CandleManager {
 
   closeCandle () {
     this.currentCandle.finish()
+    logger.silly(`Candle closed: ${this.currentCandle.toString()}`)
 
     this.candles.push(this.currentCandle.copy())
     this.currentCandle = null
