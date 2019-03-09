@@ -26,7 +26,7 @@ coinbaseWebsocket.on('open', async () => {
   heartbeatTimeout = setTimeout(coinbaseWebsocket.connect, heartbeatReconnectDelay)
 
   bot.ready.then(() => {
-    bot.startIntervals()
+    // bot.startIntervals()
 
     try {
       // Only attach the listener after we've been initialized
@@ -38,7 +38,8 @@ coinbaseWebsocket.on('open', async () => {
           return
         }
 
-        bot.handleTick(message)
+        logger.silly('WebSocket message', message)
+        // bot.handleTick(message)
       })
     } catch (err) {
       errorHandler(err)

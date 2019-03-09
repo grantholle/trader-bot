@@ -1,9 +1,6 @@
 import coinbaseClient from './clients/coinbaseClient'
 import Product from './product'
-import Candle from './candle'
 import CandleGranularity from './granularity'
-import indicators from './indicators'
-import strategies from './strategies'
 import BigNumber from 'bignumber.js'
 import { formatPrice, percentChange } from './utilities'
 import Position from './position'
@@ -45,19 +42,29 @@ export default class Bot {
     })
   }
 
-  async handleTick (message: any): Promise<void> {
-    // If this isn't a ticker message or is and doesn't have a trade id
-    if (message.type !== 'ticker' || (message.type === 'ticker' && !message.trade_id)) {
+  async handleMessage (message: any): Promise<void> {
+    // This is basically a pointless message
+    if (message.type === 'ticker' && !message.trade_id) {
       return
     }
 
+    // Handle ticker message
+    if (message.type === 'ticker') {
+      return this.handleTicker(message)
+    }
+
+    // These types are related to my orders
+    // received open match done
+  }
+
+  async handleTicker (message: any): Promise<void> {
     const price = new BigNumber(message.price)
 
     this.product.silly(`Trade: ${message.side} @ ${formatPrice(price)}`)
 
     // Set the current candle price data for each granularity
     for (const granularity of this.granularities) {
-      granularity.updateCurrentCandle(message.price)
+      granularity.candleManager.tick(message.price)
     }
 
     if (this.lastPrice && price.isEqualTo(this.lastPrice)) {
@@ -77,7 +84,7 @@ export default class Bot {
 
     // The module that handles the logic to make trades
     // traderLogic(message, productData)
-    this.lastPrice = new BigNumber(message.price)
+    this.lastPrice = price
   }
 
   async getHistoricalCandles (): Promise<void> {
@@ -91,13 +98,11 @@ export default class Bot {
         // so reverse that so it's oldest -> newest
         for (let i = res.length - 1; i >= 0; --i) {
           const p = res[i]
-          const candle = new Candle(p[3], p[1], p[2], p[4])
-          granularity.addCandle(candle)
+          // [ 0 time, 1 low, 2 high, 3 open, 4 close, 5 volume ]
+          granularity.candleManager.addHistoricalCandle(p[3], p[4], p[2], [1])
         }
 
-        granularity.trimCandles(granularity.candles)
-
-        this.product.debug(`Total historical prices @ ${granularity.minutes} minutes: ${granularity.candles.length}`)
+        this.product.debug(`Total historical prices @ ${granularity.minutes} minutes: ${granularity.candleManager.candles.length}`)
       } catch (err) {
         this.product.error(`Failed getting historical pricing data`, err)
       }
@@ -110,47 +115,7 @@ export default class Bot {
     for (const granularity of this.granularities) {
       granularity.interval = setInterval(async () => {
         // Add the candle to the set, trimming if necessary
-        granularity.addCandle(granularity.currentCandle, true)
-
-        const closingLower = granularity.getLastClose().isLessThanOrEqualTo(granularity.candles[granularity.candles.length - 2].close)
-
-        this.product.verbose(granularity.getLastCandle().toString())
-
-        const sides = []
-
-        // Calculate the technical indicators
-        for (const indicatorName of Object.keys(indicators)) {
-          const indicator = new indicators[indicatorName]()
-          const results = indicator.calculate(granularity.closes)
-          this.product.verbose(indicator.message)
-
-          granularity.setIndicator(indicatorName, results)
-
-          if (strategies[indicatorName]) {
-            const strategy = new strategies[indicatorName]()
-            sides.push(strategy.analyze(this.product, results, granularity))
-          }
-        }
-
-        const allSidesAgree = sides.every((val, i, arr) => val === arr[0] && val !== null)
-
-        this.product.debug(`triggerBuy: ${this.triggerBuy}, triggerSell: ${this.triggerSell}, triggerTrade: ${this.triggerTrade} closed lower: ${closingLower}`)
-
-        if (allSidesAgree && !this.triggerBuy && !this.triggerSell) {
-          const side = sides[0]
-          this.product.debug(`All sides agree to ${side}`)
-
-          this.triggerBuy = side === 'buy'
-          this.triggerSell = side === 'sell'
-        } else if ((this.triggerBuy && !closingLower) || (this.triggerSell && closingLower)) {
-          // If last close there was a buy trigger
-          // and this candle didn't close lower
-          // or
-          // If the last close was a sell
-          // and this candle didn't close higher
-          // the trigger a trade
-          this.triggerTrade = true
-        }
+        granularity.candleManager.closeCandle()
       }, granularity.milliseconds)
     }
   }
@@ -229,7 +194,9 @@ export default class Bot {
     for (const position of this.positions) {
       this.product.debug(`Position/price percent change: ${percentChange(position.price, price).toFixed(2)}%`)
 
-      if (price.isLessThan(position.stopPrice)) {
+      // If the price is less than our stop price and we're not already exiting
+      // Exit the position for a loss :(
+      if (price.isLessThan(position.stopPrice) && !position.exiting) {
         this.product.info(`Stop loss price met for position, exiting at ${formatPrice(price)} for a loss`)
         position.exit(price.minus(this.product.quoteIncrement))
       }
