@@ -35,6 +35,7 @@ coinbaseWebsocket.on('open', async () => {
         if (message.type === 'heartbeat') {
           clearTimeout(heartbeatTimeout)
           heartbeatTimeout = setTimeout(coinbaseWebsocket.connect, heartbeatReconnectDelay)
+          return
         }
 
         bot.handleTick(message)
